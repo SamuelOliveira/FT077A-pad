@@ -37,7 +37,7 @@
 all: p1 p2
 
 p1: exemploSerial.o
-	gcc -pthread exemploSerial.c -o exemploSerial.o
+	gcc exemploSerial.c -o exemploSerial.o
 
 p2: exemploParalelo.o
 	gcc -pthread exemploParalelo.c -o exemploParalelo.o
