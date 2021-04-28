@@ -4,43 +4,29 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#define THREADS	32
+#define THREADS	10
 #define tamanho 1000
 #define posicao(I, J, COLUNAS) ((I)*(COLUNAS) + (J))
 
-int *matrizA, *matrizB, *matrizC, *matrizD;
+int *matrizA, *matrizB, *matrizC, *matrizD, *matrizP;
 
 // D = A * B + C
-// aqui realizamos as operações entre as matrizes
 void *produto_matriz(void *args)
 {
     long inicio;
-    int numLin, numCol, modLin;
+    int numLin, numCol;
 
-    modLin = 0;                         // guardar o resto da divisão linhas / trd 
+    inicio = (long) args;
 
-    inicio = (long) args;               // separando a "fatia" da matriz para processamento
+    numCol = tamanho;
+    numLin = (int) (tamanho / THREADS);
 
-    numCol = tamanho;                   // tamanho da matriz
-
-    numLin = (int) (tamanho / THREADS); // numero de linhas para thread
-
-    // balanceamento da quantidade de linhas
-    // aqui tratamos resto das linhas que sobraram na divisão pelas threads
-    // ( se houver necessidade )
-    if(THREADS == inicio+1)
-    {
-        modLin = (int) (tamanho % THREADS);
-    }
-
-    for (int i=(inicio*numLin); i<(numLin*(inicio+1))+modLin; i++) {
+    for (int i=(inicio*numLin); i<numLin*(inicio+1); i++) {
         for (int j=0; j<numCol; j++) {
             int temp = 0;
-            // produto das matrizes A * B
             for(int k=0; k<tamanho; k++) {
                 temp = temp + matrizA[posicao(i, k, tamanho)] * matrizB[posicao(k, j, tamanho)];
             }
-            // o resultado do produto soma com C, D = P + C
             matrizD[posicao(i, j, tamanho)] = temp + matrizC[posicao(i, j, tamanho)];
         }
     }
@@ -48,7 +34,6 @@ void *produto_matriz(void *args)
     pthread_exit(NULL);
 }
 
-// aqui realizamos a leitura das matrizes
 void *carrega_matriz(void *args)
 {
     int *matriz = (int *) args;
@@ -81,15 +66,6 @@ void imprime_matriz(int *args)
     printf("\n");
 }
 
-// void carrega_serial(int *args)
-// {
-//     for (int i=0; i<tamanho; i++) {
-//         for (int j=0; j<tamanho; j++) {
-//             args[posicao(i, j, tamanho)] = rand() % 10 + 1;
-//         }
-//     }
-// }
-
 int main() {
     srand(time(NULL));
 
@@ -105,6 +81,7 @@ int main() {
     matrizA = (int *) malloc(tamanho * tamanho * sizeof(int));
     matrizB = (int *) malloc(tamanho * tamanho * sizeof(int));
     matrizC = (int *) malloc(tamanho * tamanho * sizeof(int));
+    matrizP = (int *) malloc(tamanho * tamanho * sizeof(int));
     matrizD = (int *) malloc(tamanho * tamanho * sizeof(int));
 
     // Inicia Tempo
@@ -129,7 +106,7 @@ int main() {
     }
 
     // aqui fazemos o Join das threads de operações
-    // neste momento sincronizamos as threads de operações
+    // neste momento sincronizamos as threads das operações
     for (t=0; t<THREADS; t++)
     {
         pthread_join(threads[t], &status);
@@ -159,6 +136,7 @@ int main() {
     free(matrizA);
     free(matrizB);
     free(matrizC);
+    free(matrizP);
     free(matrizD);
 
     return 0;

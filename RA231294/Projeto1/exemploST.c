@@ -6,24 +6,30 @@
 #define tamanho 1000
 #define posicao(I, J, COLUNAS) ((I)*(COLUNAS) + (J))
 
-int *matrizA, *matrizB, *matrizC, *matrizD;
+int *matrizA, *matrizB, *matrizC, *matrizD, *matrizP;
 
-// D = A * B + C
-// aqui realizamos as operações entre as matrizes
-void produto_matriz()
+void soma_matriz()
 {
     for (int i=0; i<tamanho; i++) {
         for (int j=0; j<tamanho; j++) {
-            int temp = 0;
-            for(int k=0; k<tamanho; k++) {
-                temp = temp + matrizA[posicao(i, k, tamanho)] * matrizB[posicao(k, j, tamanho)];
-            }
-            matrizD[posicao(i, j, tamanho)] = temp + matrizC[posicao(i, j, tamanho)];
+            matrizD[posicao(i, j, tamanho)] = matrizP[posicao(i, j, tamanho)] + matrizC[posicao(i, j, tamanho)];
         }
     }
 }
 
-// aqui realizamos a leitura das matrizes
+void produto_matriz()
+{
+    for (int j=0; j<tamanho; j++) {
+        for (int k=0; k<tamanho; k++) {
+            int temp = 0;
+            for(int i = 0; i<tamanho; i++) {
+                temp = temp + matrizA[posicao(j, i, tamanho)] * matrizB[posicao(i, k, tamanho)];
+            }
+            matrizP[posicao(j, k, tamanho)] = temp;
+        }
+    }
+}
+
 void carrega_matriz(int *args)
 {
     for (int i=0; i<tamanho; i++) {
@@ -32,18 +38,6 @@ void carrega_matriz(int *args)
         }
     }
 }
-
-// aqui realizamos a leitura das matrizes
-// void carrega_matriz()
-// {
-//     for (int i=0; i<tamanho; i++) {
-//         for (int j=0; j<tamanho; j++) {
-//             matrizA[posicao(i, j, tamanho)] = rand() % 10 + 1;
-//             matrizB[posicao(i, j, tamanho)] = rand() % 10 + 1;
-//             matrizC[posicao(i, j, tamanho)] = rand() % 10 + 1;
-//         }
-//     }
-// }
 
 void imprime_matriz(int *args)
 {
@@ -67,12 +61,10 @@ void imprime_matriz(int *args)
 int main() {
     srand(time(NULL));
 
-    // neste momento estamos alocando espaço em memória em uma única etapa
-    // as matrizes são quadradas isto pode ser observado no trecho de código abaixo
-    // "tamanho * tamanho"
     matrizA = (int *) malloc(tamanho * tamanho * sizeof(int));
     matrizB = (int *) malloc(tamanho * tamanho * sizeof(int));
     matrizC = (int *) malloc(tamanho * tamanho * sizeof(int));
+    matrizP = (int *) malloc(tamanho * tamanho * sizeof(int));
     matrizD = (int *) malloc(tamanho * tamanho * sizeof(int));
 
     // Inicia Tempo
@@ -82,8 +74,9 @@ int main() {
     carrega_matriz(matrizB);
     carrega_matriz(matrizC);
 
-    // carrega_matriz();
     produto_matriz();
+
+    soma_matriz();
 
     // Termina Tempo
     clock_t fim = clock();
@@ -109,6 +102,7 @@ int main() {
     free(matrizA);
     free(matrizB);
     free(matrizC);
+    free(matrizP);
     free(matrizD);
 
     return 0;
