@@ -19,22 +19,27 @@ void *printHello(void *threadid)
 
 int main(int argc, char *argv[])
 {
-   pthread_t threads[NUM_THREADS];
-   int rc;
-   long t;
-   void *status;
+  pthread_t threads[NUM_THREADS];
+  int rc;
+  long t;
+  void *status;
 
-   for(t=0;t<NUM_THREADS;t++)
-   {
-     printf("Criando thread %ld\n", t);
-     rc = pthread_create(&threads[t], NULL, printHello, (void *)t);
+  // pthread_create argumentos:
+  // thread : Um identificador opaco e exclusivo para o novo thread retornado pela sub-rotina.
+  // attr : Um objeto de atributo opaco que pode ser usado para definir atributos de thread. Você pode especificar um objeto de atributos de thread ou NULL para os valores padrão.
+  // start_routine : a rotina C que a thread executará depois de criada.
+  // arg : Um único argumento que pode ser passado para start_routine. Deve ser passado por referência como um lançamento de ponteiro do tipo void. NULL pode ser usado se nenhum argumento for passado.
+  for(t=0;t<NUM_THREADS;t++)
+  {
+    printf("Criando thread %ld\n", t);
+    rc = pthread_create(&threads[t], NULL, printHello, (void *)t);
 
-     if (rc)
-     {
-       printf("ERRO: retorno do pthread_create() e %d\n", rc);
-       exit(-1);
-     }
-   }
+    if (rc)
+    {
+      printf("ERRO: retorno do pthread_create() e %d\n", rc);
+      exit(-1);
+    }
+  }
 
   printf("Juntando as threads %ld\n", t);
 

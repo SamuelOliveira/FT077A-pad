@@ -47,7 +47,7 @@ int main(void)
 		      "man sem_init" no shell do linux p/ ver os detalhes)
 	3o parametro: valor inicial do semaforo
 	*/ 
-	sem_init(&mutex, 0 , 1);
+	sem_init(&mutex, 0, 1);
 	sem_init(&vazio, 0, N);
 	sem_init(&cheio, 0, 0);
 	
@@ -70,7 +70,7 @@ int main(void)
 	pthread_join(thd0,0);
 	pthread_join(thd1,0);
 
-        printf("\n");	
+    printf("\n");	
 	exit(0);
 }
 
@@ -146,7 +146,7 @@ void *consumidor(void *p_arg)
 	int item;
 	register int i=0;
 
-        while(i++<VEZES)
+    while(i++<VEZES)
 	{
 		sem_wait(&cheio);
 		sem_wait(&mutex);
