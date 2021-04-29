@@ -34,16 +34,10 @@
 # clean:
 # 	rm -f $(OBJETOS)
 
-all: p1 p2 p3 p4
+all: p1 p2
 
 p1: exemploSerial.o
 	gcc exemploSerial.c -o exemploSerial.o
 
 p2: exemploParalelo.o
 	gcc -pthread exemploParalelo.c -o exemploParalelo.o
-
-p3: exemploST.o
-	gcc exemploST.c -o exemploST.o
-
-p4: exemploPT.o
-	gcc -pthread exemploPT.c -o exemploPT.o

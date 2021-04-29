@@ -24,26 +24,16 @@ void produto_matriz()
 }
 
 // aqui realizamos a leitura das matrizes
-void carrega_matriz(int *args)
+void carrega_matriz_serial()
 {
     for (int i=0; i<tamanho; i++) {
         for (int j=0; j<tamanho; j++) {
-            args[posicao(i, j, tamanho)] = rand() % 10 + 1;
+            matrizA[posicao(i, j, tamanho)] = rand() % 10 + 1;
+            matrizB[posicao(i, j, tamanho)] = rand() % 10 + 1;
+            matrizC[posicao(i, j, tamanho)] = rand() % 10 + 1;
         }
     }
 }
-
-// aqui realizamos a leitura das matrizes
-// void carrega_matriz()
-// {
-//     for (int i=0; i<tamanho; i++) {
-//         for (int j=0; j<tamanho; j++) {
-//             matrizA[posicao(i, j, tamanho)] = rand() % 10 + 1;
-//             matrizB[posicao(i, j, tamanho)] = rand() % 10 + 1;
-//             matrizC[posicao(i, j, tamanho)] = rand() % 10 + 1;
-//         }
-//     }
-// }
 
 void imprime_matriz(int *args)
 {
@@ -75,14 +65,13 @@ int main() {
     matrizC = (int *) malloc(tamanho * tamanho * sizeof(int));
     matrizD = (int *) malloc(tamanho * tamanho * sizeof(int));
 
+    // como não estamos interessados em computar o tempo de processamento do carregamento
+    // deixamos esta parte fora da contagem do tempo
+    carrega_matriz_serial();
+
     // Inicia Tempo
     clock_t inicio = clock();
 
-    carrega_matriz(matrizA);
-    carrega_matriz(matrizB);
-    carrega_matriz(matrizC);
-
-    // carrega_matriz();
     produto_matriz();
 
     // Termina Tempo
