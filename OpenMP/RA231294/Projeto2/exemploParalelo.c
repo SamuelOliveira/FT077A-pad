@@ -88,7 +88,8 @@ int main() {
     // Como não estamos interessados em computar o tempo de processamento do carregamento
     // deixamos esta parte fora da contagem do tempo
 
-    // Aqui criamos threads individuais para carregamento de cada Matriz
+    // Aqui primeiro estabelecemos uma área para paralelização
+    // depois criamos threads individuais para carregamento de cada Matriz
     // 3 threads, matrizes A, B e C
     omp_set_num_threads(3);
     #pragma omp parallel private (thread_id)
@@ -125,14 +126,14 @@ int main() {
     /**
      * Aqui redefinimos o número de threads de acordo com
      * as especificações globais em #define NUM_THREADS
-     * não incluimos o tempo de criação das threads, que exige recursos do S.O.
-     * Queremos computar somente o tempo de processamento das operações
      **/
     omp_set_num_threads(NUM_THREADS);
 
     // Inicia Tempo
     clock_t inicio = clock();
 
+    // Aqui ralizamos as operaçãoes com as matrizes
+    // dentro da função criamos a área para paralelização
     produto_matriz();
 
     // Termina Tempo

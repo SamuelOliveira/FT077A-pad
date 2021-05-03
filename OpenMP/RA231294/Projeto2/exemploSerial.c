@@ -72,6 +72,7 @@ int main() {
     // Inicia Tempo
     clock_t inicio = clock();
 
+    // operaçãoes com as matrizes
     produto_matriz();
 
     // Termina Tempo
