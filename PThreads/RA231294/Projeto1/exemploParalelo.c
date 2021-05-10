@@ -15,13 +15,11 @@ int *matrizA, *matrizB, *matrizC, *matrizD;
 void *produto_matriz(void *args)
 {
     long inicio;
-    int numLin, numCol, modLin;
+    int numLin, modLin;
 
-    modLin = 0;                         // guardar o resto da divisão linhas / trd 
+    modLin = 0;                             // guardar o resto da divisão linhas / trd 
 
-    inicio = (long) args;               // separando a "fatia" da matriz para processamento
-
-    numCol = tamanho;                   // tamanho da matriz
+    inicio = (long) args;                   // separando a "fatia" da matriz para processamento
 
     numLin = (int) (tamanho / NUM_THREADS); // numero de linhas para thread
 
@@ -34,7 +32,7 @@ void *produto_matriz(void *args)
     }
 
     for (int i=(inicio*numLin); i<(numLin*(inicio+1))+modLin; i++) {
-        for (int j=0; j<numCol; j++) {
+        for (int j=0; j<tamanho; j++) {
             int temp = 0;
             // produto das matrizes A * B
             for(int k=0; k<tamanho; k++) {
