@@ -42,7 +42,7 @@ void soma_matriz_omp(int *a, int *b, int *r, int tamanho, int thds)
      **/
     #pragma omp parallel shared(r) private(i, j) num_threads(thds)
     {
-        #pragma omp for schedule(static)
+        #pragma omp for// schedule(static)
         for (i=0; i<tamanho; i++) {
             for (j=0; j<tamanho; j++) {
                 r[posicao(i, j, tamanho)] = a[posicao(i, j, tamanho)] + b[posicao(i, j, tamanho)];

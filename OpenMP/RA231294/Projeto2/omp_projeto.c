@@ -14,11 +14,8 @@ int *matrizA, *matrizB, *matrizC, *matrizD, *matrizP;
 
 int main(int argc, char* argv[]) {
     srand(time(NULL));
-   
-	FILE* fp;
-	fp = fopen("omp_projeto.txt", "w+");
-	fclose(fp);
-
+      
+	// Dividindo o total de threads entre as operações
     int thds_p;  // Threads para a operação produto
     int thds_s;  // Threads para a operação soma
 
@@ -80,13 +77,14 @@ int main(int argc, char* argv[]) {
     }
 
     // Threads insuficientes
+	// Menos de 2 Threads é um Processo Serial
     if(threads < 2) {
         options_list();
         printf("\x1b[41mAviso:\x1b[0m\x1b[33m Threads insuficientes!\x1b[0m\n");
         exit(0);
     }
 
-    // neste momento estamos alocando espaço em memória em uma única etapa
+    // neste momento estamos alocando espaço em memória
     // as matrizes são quadradas
     matrizA = aloca_matriz(tamanho);
     matrizB = aloca_matriz(tamanho);
@@ -122,18 +120,15 @@ int main(int argc, char* argv[]) {
     thds_s = (int) (threads / 2);
     thds_p = thds_s + ((int) (threads % 2));
 
-    // Inicia Tempo
+    // Inicia Tempo. Processo Paralelo
     clock_t inicioParalelo = clock();
 
     // Aqui ralizamos as operaçãoes com as matrizes
     // dentro da função criamos a área para paralelização
     produto_matriz_omp(matrizA,matrizB,matrizP,tamanho,thds_p);
 
-    // #pragma omp barrier
-
     // operações com as matrizes, soma
     soma_matriz_omp(matrizP,matrizC,matrizD,tamanho,thds_s);
-
 
     // Termina tempo
     clock_t fimParalelo = clock();
@@ -161,24 +156,6 @@ int main(int argc, char* argv[]) {
         printf("  Serial:   \x1b[33m%.6fs\x1b[0m\n",tempoSerial);
         printf("  Paralelo: \x1b[33m%.6fs\x1b[0m\n",tempoParalelo);
         printf("\n");
-
-        FILE* fp;
-        fp = fopen("omp_projeto.txt", "a+");
-
-        // Console write
-        printf("----------------------------------\n");
-        printf("Test : Optimized Parallel Multiply\n");
-        printf("----------------------------------\n");
-        printf("Dimension : %d\n", tamanho);
-        printf("..................................\n");
-        
-        // File write
-        fprintf(fp, "----------------------------------\n");
-        fprintf(fp, "Test : Optimized Parallel Multiply\n");
-        fprintf(fp, "----------------------------------\n");
-        fprintf(fp, "Dimension : %d\n", tamanho);
-        fprintf(fp, "..................................\n");
-        fclose(fp);
     }
 
     free(matrizA);
