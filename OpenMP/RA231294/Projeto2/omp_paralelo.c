@@ -16,7 +16,7 @@ void produto_matriz_omp(int *a, int *b, int *r, int tamanho, int thds)
      **/
     #pragma omp parallel shared(r) private(i, j, k, tot) num_threads(thds)
     {
-        #pragma omp for schedule(static)
+        #pragma omp for //schedule(static)
         for (i=0; i<tamanho; i++) {
             for (j=0; j<tamanho; j++) {
                 tot = 0;
