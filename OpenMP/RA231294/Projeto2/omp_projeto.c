@@ -3,7 +3,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <omp.h>
 
 #include "utils.h"
 #include "consts.h"
@@ -114,17 +113,14 @@ int main(int argc, char* argv[]) {
     // Calcula tempo
     double tempoSerial = (double)(fimSerial - inicioSerial) / CLOCKS_PER_SEC;
 
-    // Inicia Tempo. Processo Paralelo
-    clock_t inicioParalelo = clock();
-
-    // Definindo o numero máximo de Threads
-    omp_set_num_threads(threads);
-
     // obs.:    Dividimos a quantidade total de threads entre as duas operações
     //          Prevenimos a quantidade de threads informada ser um numero primo realizamos a divisão
     //          por módulo do numero de threads e acrescentamos o resto a etapa 'produto_matriz_paralelo'
     thds_s = (int) (threads / 2);
     thds_p = thds_s + ((int) (threads % 2));
+
+    // Inicia Tempo. Processo Paralelo
+    clock_t inicioParalelo = clock();
 
     // Aqui ralizamos as operaçãoes com as matrizes
     // dentro da função criamos a área para paralelização

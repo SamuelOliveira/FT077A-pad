@@ -17,9 +17,6 @@
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
-// https://medium.com/tech-vision/parallel-matrix-multiplication-c-parallel-processing-5e3aadb36f27
-typedef int TYPE_INT;
-
 #define posicao(I, J, COLUNAS) ((I)*(COLUNAS) + (J))
 
 #endif /* CONSTS_H_ */
