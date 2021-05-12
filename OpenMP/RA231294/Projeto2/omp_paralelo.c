@@ -12,7 +12,7 @@ void produto_matriz_omp(int *a, int *b, int *r, int tamanho, int thds)
     int i, j, k, tot;
 
     /**
-     * Aqui definimos o número de threads para tipo de operação r = thds
+     * Aqui definimos o número de threads para esta operação r = thds
      **/
     #pragma omp parallel shared(r) private(i, j, k, tot) num_threads(thds)
     {
@@ -26,7 +26,7 @@ void produto_matriz_omp(int *a, int *b, int *r, int tamanho, int thds)
                 r[posicao(i, j, tamanho)] = tot;
             }
         }
-        #pragma omp barrier
+        //Aqui temos um join implicito, um mecanismo de sincronização
     }
 }
 
@@ -38,7 +38,7 @@ void soma_matriz_omp(int *a, int *b, int *r, int tamanho, int thds)
     int i, j;
 
     /**
-     * Aqui definimos o número de threads para tipo de operação r = thds
+     * Aqui definimos o número de threads para esta operação r = thds
      **/
     #pragma omp parallel shared(r) private(i, j) num_threads(thds)
     {
@@ -48,5 +48,6 @@ void soma_matriz_omp(int *a, int *b, int *r, int tamanho, int thds)
                 r[posicao(i, j, tamanho)] = a[posicao(i, j, tamanho)] + b[posicao(i, j, tamanho)];
             }
         }
+        //Aqui temos um join implicito, um mecanismo de sincronização
     }
 }

@@ -1,5 +1,5 @@
 /**
- * @brief Definições de funções seriais com matrizes
+ * @brief Definições de funções operações com matrizes
  */
 
 #ifndef __SERIAL_H_

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+
 #include "consts.h"
 #include "serial.h"
 
@@ -14,7 +15,6 @@ void produto_matriz_serial(int *a, int *b, int *r, int tamanho)
             tot = 0;
             for(int k=0; k<tamanho; k++) {
                 tot += a[posicao(i, k, tamanho)] * b[posicao(k, j, tamanho)];
-                // r[posicao(i, j, tamanho)] = a[posicao(i, k, tamanho)] * b[posicao(k, j, tamanho)];
             }
             r[posicao(i, j, tamanho)] = tot;
         }
