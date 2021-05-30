@@ -151,6 +151,6 @@ int main(int argc, char* argv[]) {
     free(matrizA);
     free(matrizB);
     free(matrizC);
-    free(matrizD);
     free(matrizP);
+    free(matrizD);
 }
