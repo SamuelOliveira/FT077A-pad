@@ -7,6 +7,7 @@
 // D = A * B + C
 void produto_soma_matrizes(int *a, int *b, int *c, int *p, int *d, int n)
 {
+
     #pragma acc parallel enter data             \
             device_type(nvidia)                 \
             copyin(a[:n∗n], b[:n∗n], c[:n∗n]),  \
@@ -30,5 +31,8 @@ void produto_soma_matrizes(int *a, int *b, int *c, int *p, int *d, int n)
             }
         }
     }
-    #pragma acc exit data copyout(d[:n∗n]) delete(a,b,c,p)
+    #pragma acc exit data       \
+            copyout(d[:n∗n])    \
+            delete(a,b,c,p)
+
 }
