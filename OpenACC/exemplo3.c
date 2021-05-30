@@ -39,8 +39,8 @@ int main(int argc, char **argv) {
     for (i=0; i < linhas; i++)
       for (j = 0; j < colunas; j++) 
       {
-	x[i*colunas + j] = 2.0f;
-	tmp += x[i*colunas + j];
+        x[i*colunas + j] = 2.0f;
+        tmp += x[i*colunas + j];
       }
     
     printf("\nDepois:\n");

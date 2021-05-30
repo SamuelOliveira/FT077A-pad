@@ -7,9 +7,9 @@
 #include "utils.h"
 #include "consts.h"
 #include "serial.h"
-#include "omp_paralelo.h"
+#include "acc_paralelo.h"
 
-int *matrizA, *matrizB, *matrizC, *matrizD, *matrizP;
+int *matrizA, *matrizB, *matrizC, *matrizP, *matrizD;
 
 int main(int argc, char* argv[]) {
     srand(time(NULL));
@@ -88,15 +88,14 @@ int main(int argc, char* argv[]) {
     matrizA = aloca_matriz(tamanho);
     matrizB = aloca_matriz(tamanho);
     matrizC = aloca_matriz(tamanho);
-    matrizD = aloca_matriz(tamanho);
     matrizP = aloca_matriz(tamanho);
+    matrizD = aloca_matriz(tamanho);
 
     // como não estamos interessados em computar o tempo do carregamento
     // deixamos esta parte fora da contagem do tempo
     carrega_matriz(matrizA,tamanho);
     carrega_matriz(matrizB,tamanho);
     carrega_matriz(matrizC,tamanho);
-    carrega_matriz(matrizD,tamanho);
 
     // Inicia Tempo. Processo Serial
     clock_t inicioSerial = clock();
@@ -113,23 +112,13 @@ int main(int argc, char* argv[]) {
     // Calcula tempo
     double tempoSerial = (double)(fimSerial - inicioSerial) / CLOCKS_PER_SEC;
 
-    // obs.:    Dividimos a quantidade total de threads entre as duas operações
-    //          Prevenimos a quantidade de threads informada ser um numero primo realizamos a divisão
-    //          por módulo do numero de threads e acrescentamos o resto a etapa 'produto_matriz_omp'
-    thds_s = (int) (threads / 2);
-    thds_p = thds_s + ((int) (threads % 2));
-
     // Inicia Tempo. Processo Paralelo
     clock_t inicioParalelo = clock();
 
     // Aqui ralizamos as operaçãoes com as matrizes
     // dentro da função criamos a área para paralelização
-
-    // operações com as matrizes, produto
-    produto_matriz_omp(matrizA,matrizB,matrizP,tamanho,thds_p);
-
-    // operações com as matrizes, soma
-    soma_matriz_omp(matrizP,matrizC,matrizD,tamanho,thds_s);
+    // operações com as matrizes, produto e soma
+    produto_soma_matrizes(matrizA,matrizB,matrizC,matrizP,matrizD,tamanho);
 
     // Termina tempo
     clock_t fimParalelo = clock();
