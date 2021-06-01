@@ -11,6 +11,6 @@
 /**
  * @brief Produto e Soma de matrizes, D = A * B + C
  */
-void produto_soma_matrizes(int *a, int *b, int *c, int *p, int *d, int n);
+void produto_soma_matrizes(int *a, int *b, int *c, int *p, int *d, int N);
 
 #endif /* ACC_PARALELO_H_ */

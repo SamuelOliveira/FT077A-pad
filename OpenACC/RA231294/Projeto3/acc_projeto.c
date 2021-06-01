@@ -14,10 +14,6 @@ int *matrizA, *matrizB, *matrizC, *matrizP, *matrizD;
 int main(int argc, char* argv[]) {
     srand(time(NULL));
       
-	// Dividindo o total de threads entre as operações
-    int thds_p;  // Threads para a operação produto
-    int thds_s;  // Threads para a operação soma
-
     // Variaveis de controle para posição do parametro
     char *ret;
     char *tmp;
@@ -154,3 +150,4 @@ int main(int argc, char* argv[]) {
     free(matrizP);
     free(matrizD);
 }
+

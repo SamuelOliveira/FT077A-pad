@@ -20,3 +20,4 @@
 #define posicao(I, J, COLUNAS) ((I)*(COLUNAS) + (J))
 
 #endif /* CONSTS_H_ */
+
