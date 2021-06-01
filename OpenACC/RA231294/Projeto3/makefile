@@ -1,4 +1,3 @@
-all: p1
+acc_projeto: acc_projeto.c
 
-p1: acc_projeto.o consts.h utils.h serial.h acc_paralelo.h
-	gcc -fopenacc acc_projeto.c utils.c serial.c acc_paralelo.c -o acc_projeto.o -lm
+	pgcc -fast -acc -ta=tesla -Minfo=all acc_projeto.c -o acc_projeto

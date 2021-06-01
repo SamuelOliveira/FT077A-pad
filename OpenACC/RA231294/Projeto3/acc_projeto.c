@@ -4,16 +4,48 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include "utils.h"
-#include "consts.h"
-#include "serial.h"
-#include "acc_paralelo.h"
+#include <openacc.h>
+
+#define posicao(I, J, COLUNAS) ((I)*(COLUNAS) + (J))
 
 int *matrizA, *matrizB, *matrizC, *matrizP, *matrizD;
 
+/**
+ * @brief Alocando uma matriz quadrada
+ */
+int *aloca_matriz(int tamanho);
+
+/**
+ * @brief Carrega uma matriz quadrada de forma serial
+ */
+
+void carrega_matriz(int *args, int tamanho);
+
+/**
+ * @brief Imprimindo uma matriz quadrada
+ */
+void imprime_matriz(int *args, int tamanho);
+
+double speed_up(double ts, double tp);
+
+void options_list();
+
+/**
+ * @brief Produtos de matrizes, r = a * b
+ */
+void produto_matriz_serial(int *a, int *b, int *r, int tamanho);
+
+/**
+ * @brief Soma de matrizes, r = a + b
+ */
+void soma_matriz_serial(int *a, int *b, int *r, int tamanho);
+
+// D = A * B + C
+void produto_soma_matrizes(int *a, int *b, int *c, int *p, int *d, int N);
+
 int main(int argc, char* argv[]) {
     srand(time(NULL));
-      
+
     // Variaveis de controle para posição do parametro
     char *ret;
     char *tmp;
@@ -21,7 +53,6 @@ int main(int argc, char* argv[]) {
 
     // Variaveis para os parametros e argumentos
     int tamanho = 0;    // Opcao 't'
-    int threads = 0;    // Opcao 'r'
     short verbose = 0;  // Opcao 'v'
     short summary = 0;  // Opcao 's'
 
@@ -32,16 +63,14 @@ int main(int argc, char* argv[]) {
     }
 
     // Argumentos insuficientes
-    if(argc != 4) {
+    if(argc != 3) {
         options_list();
         printf("\x1b[41mAviso:\x1b[0m\x1b[33m Argumentos insuficientes!\x1b[0m\n");
         exit(0);
     }
 
     // Recuperando parametros e argumentos
-    // http://mindbending.org/pt/argumentos-e-parametros-em-c
-    // https://www.geeksforgeeks.org/getopt-function-in-c-to-parse-command-line-arguments/?ref=rp
-    while((optc = getopt(argc, argv, "t:vr:s")) != -1) {
+    while((optc = getopt(argc, argv, "t:vs")) != -1) {
         switch(optc) {
             case 'v' : // Verbose
                 verbose = 1;
@@ -49,34 +78,17 @@ int main(int argc, char* argv[]) {
             case 's' : // Summary
                 summary = 1;
                 break;
-            case 'r' : // Threads
-                tmp = argv[1];
-                ret = strstr(tmp, "rt");
-                if(ret) {
-                    threads = atoi(argv[2]);
-                    tamanho = atoi(argv[3]);
-                }
-                break;
             case 't' : // Tamanho
                 tmp = argv[1];
-                ret = strstr(tmp, "tr");
+                ret = strstr(tmp, "t");
                 if(ret) {
                     tamanho = atoi(argv[2]);
-                    threads = atoi(argv[3]);
                 }
                 break;
             default : // Qualquer parametro nao tratado
                 printf("Parametros incorretos.\n");
                 exit(0);
         }
-    }
-
-    // Threads insuficientes
-	// Menos de 2 Threads é um Processo Serial
-    if(threads < 2) {
-        options_list();
-        printf("\x1b[41mAviso:\x1b[0m\x1b[33m Threads insuficientes!\x1b[0m\n");
-        exit(0);
     }
 
     // neste momento estamos alocando espaço em memória
@@ -136,12 +148,10 @@ int main(int argc, char* argv[]) {
     if(summary == 1) {
         printf("\n");
         printf("\x1b[41mResumo\x1b[0m\n");
-        printf("  Threads:  \x1b[33m%d\x1b[0m\n",threads);
         printf("  SpeedUp:  \x1b[33m%.6fs\x1b[0m\n",speedup);
         printf("  Matriz:   \x1b[33m%dx%d\x1b[0m\n",tamanho, tamanho);
         printf("  Serial:   \x1b[33m%.6fs\x1b[0m\n",tempoSerial);
         printf("  Paralelo: \x1b[33m%.6fs\x1b[0m\n",tempoParalelo);
-        printf("\n");
     }
 
     free(matrizA);
@@ -149,5 +159,119 @@ int main(int argc, char* argv[]) {
     free(matrizC);
     free(matrizP);
     free(matrizD);
+}
+
+/**
+ * @brief Alocando uma matriz quadrada
+ */
+int *aloca_matriz(int tamanho) {
+    return (int *) malloc(tamanho * tamanho * sizeof(int));
+}
+
+/**
+ * @brief Carrega uma matriz quadrada de forma serial
+ */
+void carrega_matriz(int *args, int tamanho)
+{
+    for (int i=0; i < tamanho; i++) {
+        for (int j=0; j < tamanho; j++) {
+            args[posicao(i, j, tamanho)] = rand() % 10 + 1;
+        }
+    }
+}
+
+/**
+ * @brief Imprimindo uma matriz quadrada
+ */
+void imprime_matriz(int *args, int tamanho)
+{
+    for(int i = 0; i < tamanho; i++)
+    {
+        for(int j = 0; j < tamanho; j++)
+        {
+            if(j != (tamanho-1))
+            {
+                printf("%d \t",args[posicao(i, j, tamanho)]);
+            }
+            else
+            {
+                printf("%d \n",args[posicao(i, j, tamanho)]);
+            }
+        }
+    }
+    printf("\n");
+}
+
+double speed_up(double ts, double tp)
+{
+    return ts/tp;
+}
+
+void options_list()
+{
+    printf("\n");
+    printf("\x1b[41mOpções\x1b[0m\n");
+    printf("  *\x1b[33m -t\x1b[0m - Tamanho da Matriz Quadrada\n");
+    printf("  *\x1b[33m -s\x1b[0m - (opcional) Imprime Resumo do Processamento\n");
+    printf("  *\x1b[33m -v\x1b[0m - (opcional) Imprime Matrizes para Verificação, t<=10\n");
+    printf("\n\x1b[36mNo mínimo um parâmetro com argumento deve ser fornecido!\x1b[0m\n");
+    printf("\n");
+}
+
+/**
+ * @brief Produtos de matrizes, r = a * b
+ */
+void produto_matriz_serial(int *a, int *b, int *r, int tamanho)
+{
+    int tot;
+
+    for (int i=0; i<tamanho; i++) {
+        for (int j=0; j<tamanho; j++) {
+            tot = 0;
+            for(int k=0; k<tamanho; k++) {
+                tot += a[posicao(i, k, tamanho)] * b[posicao(k, j, tamanho)];
+            }
+            r[posicao(i, j, tamanho)] = tot;
+        }
+    }
+}
+
+/**
+ * @brief Soma de matrizes, r = a + b
+ */
+void soma_matriz_serial(int *a, int *b, int *r, int tamanho)
+{
+    for (int i=0; i<tamanho; i++) {
+        for (int j=0; j<tamanho; j++) {
+            r[posicao(i, j, tamanho)] = a[posicao(i, j, tamanho)] + b[posicao(i, j, tamanho)];
+        }
+    }
+}
+
+// D = A * B + C
+void produto_soma_matrizes(int *a, int *b, int *c, int *p, int *d, int n)
+{
+
+    #pragma acc enter data                              \
+                copyin(a[:n*n], b[:n*n], c[:n*n])       \
+                create(p[:n*n], d[:n*n])
+    {
+
+        #pragma acc parallel loop collapse(3)
+        for (int i=0; i<n; i++)
+            for (int j=0; j<n; j++)
+                for (int k=0; k<n; k++)
+                    p[posicao(i, j, n)] += a[posicao(i, k, n)] * b[posicao(k, j, n)];
+
+        #pragma acc parallel loop collapse(2)
+        for (int i=0; i<n; i++)
+            for (int j=0; j<n; j++)
+                d[posicao(i, j, n)] = p[posicao(i, j, n)] + c[posicao(i, j, n)];
+
+    }
+    #pragma acc exit data               \
+                copyout(d[:n*n])        \
+                delete(a,b,c,p)
+
 }
 
