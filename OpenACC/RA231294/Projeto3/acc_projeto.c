@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
     // Aqui ralizamos as operaçãoes com as matrizes
     // dentro da função criamos a área para paralelização
     // operações com as matrizes, produto e soma
-    produto_soma_matrizes(matrizA,matrizB,matrizC,matrizP,matrizD,tamanho);
+    produto_soma_matrizes_final(matrizA,matrizB,matrizC,matrizP,matrizD,tamanho);
 
     // Termina tempo
     clock_t fimParalelo = clock();
@@ -274,4 +274,37 @@ void produto_soma_matrizes(int *a, int *b, int *c, int *p, int *d, int n)
                 delete(a,b,c,p)
 
 }
+
+// D = A * B + C
+void produto_soma_matrizes_final(int *a, int *b, int *c, int *p, int *d, int n)
+{
+/*
+    #pragma acc enter data                              \
+                copyin(n, a[:n*n], b[:n*n], c[:n*n])    \
+                create(p[:n*n], d[:n*n])
+    {
+*/
+        #pragma acc parallel loop collapse(3)   \
+                copyin(a[:n*n], b[:n*n])        \
+                copy(p[:n*n])
+        for (int i=0; i<n; i++)
+            for (int j=0; j<n; j++)
+                for (int k=0; k<n; k++)
+                    p[posicao(i, j, n)] += a[posicao(i, k, n)] * b[posicao(k, j, n)];
+
+        #pragma acc parallel loop collapse(2)   \
+                copyin(c[:n*n], p[:n*n])        \
+                copy(d[:n*n])
+
+        for (int i=0; i<n; i++)
+            for (int j=0; j<n; j++)
+                d[posicao(i, j, n)] = p[posicao(i, j, n)] + c[posicao(i, j, n)];
+/*
+    }
+    #pragma acc exit data               \
+                copyout(d[:n*n])        \
+                delete(a,b,c,p,n)
+*/
+}
+
 
