@@ -40,8 +40,10 @@ void produto_matriz_serial(int *a, int *b, int *r, int tamanho);
  */
 void soma_matriz_serial(int *a, int *b, int *r, int tamanho);
 
-// D = A * B + C
-void produto_soma_matrizes(int *a, int *b, int *c, int *p, int *d, int N);
+/**
+ * @brief Operações com matrizes, Paralelização, D = A * B + C
+ */
+void produto_soma_matrizes(int *a, int *b, int *c, int *p, int *d, int n);
 
 int main(int argc, char* argv[]) {
     srand(time(NULL));
@@ -248,63 +250,26 @@ void soma_matriz_serial(int *a, int *b, int *r, int tamanho)
     }
 }
 
-// D = A * B + C
+/**
+ * @brief Operações com matrizes, Paralelização, D = A * B + C
+ */
 void produto_soma_matrizes(int *a, int *b, int *c, int *p, int *d, int n)
 {
 
-    #pragma acc enter data                              \
-                copyin(a[:n*n], b[:n*n], c[:n*n])       \
-                create(p[:n*n], d[:n*n])
-    {
+    #pragma acc parallel loop collapse(3)   \
+            copyin(a[:n*n], b[:n*n])        \
+            copy(p[:n*n])
+    for (int i=0; i<n; i++)
+        for (int j=0; j<n; j++)
+            for (int k=0; k<n; k++)
+                p[posicao(i, j, n)] += a[posicao(i, k, n)] * b[posicao(k, j, n)];
 
-        #pragma acc parallel loop collapse(3)
-        for (int i=0; i<n; i++)
-            for (int j=0; j<n; j++)
-                for (int k=0; k<n; k++)
-                    p[posicao(i, j, n)] += a[posicao(i, k, n)] * b[posicao(k, j, n)];
-
-        #pragma acc parallel loop collapse(2)
-        for (int i=0; i<n; i++)
-            for (int j=0; j<n; j++)
-                d[posicao(i, j, n)] = p[posicao(i, j, n)] + c[posicao(i, j, n)];
-
-    }
-    #pragma acc exit data               \
-                copyout(d[:n*n])        \
-                delete(a,b,c,p)
+    #pragma acc parallel loop collapse(2)   \
+            copyin(c[:n*n], p[:n*n])        \
+            copy(d[:n*n])
+    for (int i=0; i<n; i++)
+        for (int j=0; j<n; j++)
+            d[posicao(i, j, n)] = p[posicao(i, j, n)] + c[posicao(i, j, n)];
 
 }
-
-// D = A * B + C
-void produto_soma_matrizes_final(int *a, int *b, int *c, int *p, int *d, int n)
-{
-/*
-    #pragma acc enter data                              \
-                copyin(n, a[:n*n], b[:n*n], c[:n*n])    \
-                create(p[:n*n], d[:n*n])
-    {
-*/
-        #pragma acc parallel loop collapse(3)   \
-                copyin(a[:n*n], b[:n*n])        \
-                copy(p[:n*n])
-        for (int i=0; i<n; i++)
-            for (int j=0; j<n; j++)
-                for (int k=0; k<n; k++)
-                    p[posicao(i, j, n)] += a[posicao(i, k, n)] * b[posicao(k, j, n)];
-
-        #pragma acc parallel loop collapse(2)   \
-                copyin(c[:n*n], p[:n*n])        \
-                copy(d[:n*n])
-
-        for (int i=0; i<n; i++)
-            for (int j=0; j<n; j++)
-                d[posicao(i, j, n)] = p[posicao(i, j, n)] + c[posicao(i, j, n)];
-/*
-    }
-    #pragma acc exit data               \
-                copyout(d[:n*n])        \
-                delete(a,b,c,p,n)
-*/
-}
-
 
