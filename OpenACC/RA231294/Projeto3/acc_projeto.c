@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
     // Aqui ralizamos as operaçãoes com as matrizes
     // dentro da função criamos a área para paralelização
     // operações com as matrizes, produto e soma
-    produto_soma_matrizes_final(matrizA,matrizB,matrizC,matrizP,matrizD,tamanho);
+    produto_soma_matrizes(matrizA,matrizB,matrizC,matrizP,matrizD,tamanho);
 
     // Termina tempo
     clock_t fimParalelo = clock();
