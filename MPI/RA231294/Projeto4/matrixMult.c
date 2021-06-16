@@ -2,7 +2,7 @@
 #include<stdlib.h>
 #include<mpi.h>
 
-#define MAT_SIZE 8
+#define MAT_SIZE 18
 
 void initialiseMatricies(int a[][MAT_SIZE], int b[][MAT_SIZE], int c[][MAT_SIZE])
 {

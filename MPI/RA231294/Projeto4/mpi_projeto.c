@@ -4,19 +4,50 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include "utils.h"
-#include "consts.h"
-#include "serial.h"
-// #include "omp_paralelo.h"
+#include <mpi.h>
 
-int *matrizA, *matrizB, *matrizC, *matrizD, *matrizP;
 
-int main(int argc, char* argv[]) {
+#define posicao(I, J, COLUNAS) ((I)*(COLUNAS) + (J))
+
+int *matrizA, *matrizB, *matrizC, *matrizP, *matrizD;
+
+/**
+ * @brief Alocando uma matriz quadrada
+ */
+int *aloca_matriz(int n);
+
+/**
+ * @brief Carrega uma matriz quadrada de forma serial
+ */
+
+void carrega_matriz(int *args, int n);
+
+/**
+ * @brief Imprimindo uma matriz quadrada
+ */
+void imprime_matriz(int *args, int n);
+
+double speed_up(double ts, double tp);
+
+void options_list();
+
+/**
+ * @brief Produtos de matrizes, r = a * b
+ */
+void produto_matriz_serial(int *a, int *b, int *r, int n);
+
+/**
+ * @brief Soma de matrizes, r = a + b
+ */
+void soma_matriz_serial(int *a, int *b, int *r, int n);
+
+/**
+ * @brief Operações com matrizes, Paralelização, D = A * B + C
+ */
+void produto_soma_matrizes(int *a, int *b, int *c, int *p, int *d, int n);
+
+int main(int argc, char *argv[]) {
     srand(time(NULL));
-      
-	// Dividindo o total de threads entre as operações
-    int thds_p;  // Threads para a operação produto
-    int thds_s;  // Threads para a operação soma
 
     // Variaveis de controle para posição do parametro
     char *ret;
@@ -25,7 +56,6 @@ int main(int argc, char* argv[]) {
 
     // Variaveis para os parametros e argumentos
     int tamanho = 0;    // Opcao 't'
-    int threads = 0;    // Opcao 'r'
     short verbose = 0;  // Opcao 'v'
     short summary = 0;  // Opcao 's'
 
@@ -36,16 +66,14 @@ int main(int argc, char* argv[]) {
     }
 
     // Argumentos insuficientes
-    if(argc != 4) {
+    if(argc != 3) {
         options_list();
         printf("\x1b[41mAviso:\x1b[0m\x1b[33m Argumentos insuficientes!\x1b[0m\n");
         exit(0);
     }
 
     // Recuperando parametros e argumentos
-    // http://mindbending.org/pt/argumentos-e-parametros-em-c
-    // https://www.geeksforgeeks.org/getopt-function-in-c-to-parse-command-line-arguments/?ref=rp
-    while((optc = getopt(argc, argv, "t:vr:s")) != -1) {
+    while((optc = getopt(argc, argv, "t:vs")) != -1) {
         switch(optc) {
             case 'v' : // Verbose
                 verbose = 1;
@@ -53,20 +81,11 @@ int main(int argc, char* argv[]) {
             case 's' : // Summary
                 summary = 1;
                 break;
-            case 'r' : // Threads
-                tmp = argv[1];
-                ret = strstr(tmp, "rt");
-                if(ret) {
-                    threads = atoi(argv[2]);
-                    tamanho = atoi(argv[3]);
-                }
-                break;
             case 't' : // Tamanho
                 tmp = argv[1];
-                ret = strstr(tmp, "tr");
+                ret = strstr(tmp, "t");
                 if(ret) {
                     tamanho = atoi(argv[2]);
-                    threads = atoi(argv[3]);
                 }
                 break;
             default : // Qualquer parametro nao tratado
@@ -75,28 +94,19 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // Threads insuficientes
-	// Menos de 2 Threads é um Processo Serial
-    if(threads < 2) {
-        options_list();
-        printf("\x1b[41mAviso:\x1b[0m\x1b[33m Threads insuficientes!\x1b[0m\n");
-        exit(0);
-    }
-
     // neste momento estamos alocando espaço em memória
     // as matrizes são quadradas
     matrizA = aloca_matriz(tamanho);
     matrizB = aloca_matriz(tamanho);
     matrizC = aloca_matriz(tamanho);
-    matrizD = aloca_matriz(tamanho);
     matrizP = aloca_matriz(tamanho);
+    matrizD = aloca_matriz(tamanho);
 
     // como não estamos interessados em computar o tempo do carregamento
     // deixamos esta parte fora da contagem do tempo
     carrega_matriz(matrizA,tamanho);
     carrega_matriz(matrizB,tamanho);
     carrega_matriz(matrizC,tamanho);
-    carrega_matriz(matrizD,tamanho);
 
     // Inicia Tempo. Processo Serial
     clock_t inicioSerial = clock();
@@ -113,23 +123,30 @@ int main(int argc, char* argv[]) {
     // Calcula tempo
     double tempoSerial = (double)(fimSerial - inicioSerial) / CLOCKS_PER_SEC;
 
-    // obs.:    Dividimos a quantidade total de threads entre as duas operações
-    //          Prevenimos a quantidade de threads informada ser um numero primo realizamos a divisão
-    //          por módulo do numero de threads e acrescentamos o resto a etapa 'produto_matriz_omp'
-    thds_s = (int) (threads / 2);
-    thds_p = thds_s + ((int) (threads % 2));
+    int world_size, world_rank, buf[2], tag1=1, tag2=2;
+    MPI_Request reqs[4]; // Vetor necessario para chamadas nao bloqueantes
+    MPI_Status stats[4]; // Vetor necessario para a rotina Waitall 
+
+    MPI_Request ireq[128]; // , asynch request, assume size<128
+    MPI_Status stat;       // status of asynch communication
 
     // Inicia Tempo. Processo Paralelo
     clock_t inicioParalelo = clock();
 
+    MPI_Init(&argc,&argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
     // Aqui ralizamos as operaçãoes com as matrizes
-    // dentro da função criamos a área para paralelização
+    // operações com as matrizes, produto e soma
+    if (world_rank==0) {
 
-    // operações com as matrizes, produto
-    // produto_matriz_omp(matrizA,matrizB,matrizP,tamanho,thds_p);
+    }
+    else if (world_rank!=0) {
 
-    // operações com as matrizes, soma
-    // soma_matriz_omp(matrizP,matrizC,matrizD,tamanho,thds_s);
+    }
+
+    MPI_Finalize();
 
     // Termina tempo
     clock_t fimParalelo = clock();
@@ -151,17 +168,109 @@ int main(int argc, char* argv[]) {
     if(summary == 1) {
         printf("\n");
         printf("\x1b[41mResumo\x1b[0m\n");
-        printf("  Threads:  \x1b[33m%d\x1b[0m\n",threads);
         printf("  SpeedUp:  \x1b[33m%.6fs\x1b[0m\n",speedup);
         printf("  Matriz:   \x1b[33m%dx%d\x1b[0m\n",tamanho, tamanho);
         printf("  Serial:   \x1b[33m%.6fs\x1b[0m\n",tempoSerial);
         printf("  Paralelo: \x1b[33m%.6fs\x1b[0m\n",tempoParalelo);
-        printf("\n");
     }
 
     free(matrizA);
     free(matrizB);
     free(matrizC);
-    free(matrizD);
     free(matrizP);
+    free(matrizD);
+}
+
+/**
+ * @brief Alocando uma matriz quadrada
+ */
+int *aloca_matriz(int n) {
+    return (int *) malloc(n * n * sizeof(int));
+}
+
+/**
+ * @brief Carrega uma matriz quadrada de forma serial
+ */
+void carrega_matriz(int *args, int n)
+{
+    for (int i=0; i < n; i++)
+        for (int j=0; j < n; j++)
+            args[posicao(i, j, n)] = rand() % 10 + 1;
+}
+
+/**
+ * @brief Imprimindo uma matriz quadrada
+ */
+void imprime_matriz(int *args, int n)
+{
+    for(int i = 0; i < n; i++)
+    {
+        for(int j = 0; j < n; j++)
+        {
+            if(j != (n-1))
+            {
+                printf("%d \t",args[posicao(i, j, n)]);
+            }
+            else
+            {
+                printf("%d \n",args[posicao(i, j, n)]);
+            }
+        }
+    }
+    printf("\n");
+}
+
+double speed_up(double ts, double tp)
+{
+    return ts/tp;
+}
+
+void options_list()
+{
+    printf("\n");
+    printf("\x1b[41mOpções\x1b[0m\n");
+    printf("  *\x1b[33m -t\x1b[0m - Tamanho da Matriz Quadrada\n");
+    printf("  *\x1b[33m -s\x1b[0m - (opcional) Imprime Resumo do Processamento\n");
+    printf("  *\x1b[33m -v\x1b[0m - (opcional) Imprime Matrizes para Verificação, t<=10\n");
+    printf("\n\x1b[36mNo mínimo um parâmetro com argumento deve ser fornecido!\x1b[0m\n");
+    printf("\n");
+}
+
+/**
+ * @brief Produtos de matrizes, r = a * b
+ */
+void produto_matriz_serial(int *a, int *b, int *r, int n)
+{
+    for (int i=0; i<n; i++)
+        for (int j=0; j<n; j++)
+            for(int k=0; k<n; k++)
+                r[posicao(i, j, n)] += a[posicao(i, k, n)] * b[posicao(k, j, n)];
+}
+
+/**
+ * @brief Soma de matrizes, r = a + b
+ */
+void soma_matriz_serial(int *a, int *b, int *r, int n)
+{
+    for (int i=0; i<n; i++)
+        for (int j=0; j<n; j++)
+            r[posicao(i, j, n)] = a[posicao(i, j, n)] + b[posicao(i, j, n)];
+}
+
+/**
+ * @brief Operações com matrizes, Paralelização, D = A * B + C
+ */
+void produto_soma_matrizes(int *a, int *b, int *c, int *p, int *d, int n)
+{
+
+    for (int i=0; i<n; i++)
+        for (int j=0; j<n; j++)
+            for (int k=0; k<n; k++)
+                p[posicao(i, j, n)] += a[posicao(i, k, n)] * b[posicao(k, j, n)];
+
+
+    for (int i=0; i<n; i++)
+        for (int j=0; j<n; j++)
+            d[posicao(i, j, n)] = p[posicao(i, j, n)] + c[posicao(i, j, n)];
+
 }
