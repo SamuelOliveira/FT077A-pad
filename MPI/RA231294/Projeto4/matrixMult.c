@@ -71,6 +71,8 @@ int main(int argc, char *argv[])
     carrega_matriz(matrizA,N);
     carrega_matriz(matrizB,N);
     carrega_matriz(matrizC,N);
+    carrega_matriz(matrizD,N);
+    carrega_matriz(matrizP,N);
 
 
     MPI_Init(&argc, &argv);
@@ -107,7 +109,7 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);        
     MPI_Finalize();
     //print_results("C = ", c);
-    imprime_matriz(matrizD,N);
+    imprime_matriz(matrizP,N);
 
     free(matrizA);
     free(matrizB);
