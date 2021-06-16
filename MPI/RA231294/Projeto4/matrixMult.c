@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);        
     MPI_Finalize();
     //print_results("C = ", c);
-    imprime_matriz(matrizP,N);
+    if(rank==0) imprime_matriz(matrizP,N);
 
     free(matrizA);
     free(matrizB);
