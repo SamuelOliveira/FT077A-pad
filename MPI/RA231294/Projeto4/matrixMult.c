@@ -1,30 +1,59 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<mpi.h>
+#define N 18
+#include <stdio.h>
+#include <math.h>
+#include <sys/time.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include "mpi.h"
 
-#define MAT_SIZE 18
 
-void initialiseMatricies(int a[][MAT_SIZE], int b[][MAT_SIZE], int c[][MAT_SIZE])
+void print_results(char *prompt, int a[N][N]);
+
+int main(int argc, char *argv[])
 {
-    int num = 11;
-    for (int i = 0; i < MAT_SIZE; i++)
-    {
-        for (int j = 0; j < MAT_SIZE; j++)
-        {
-            a[i][j] = num;
-            b[i][j] = num+1;
-            c[i][j] = 0;
-        }
-        num++;
-    }
+    int i, j, k, rank, size, tag = 99, blksz, sum = 0;
+    int a[N][N]={{1,2,3,4},{5,6,7,8},{9,1,2,3},{4,5,6,7,}};
+    int b[N][N]={{1,2,3,4},{5,6,7,8},{9,1,2,3},{4,5,6,7,}};
+    int c[N][N];
+    int aa[N],cc[N];
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    //scatter rows of first matrix to different processes     
+    MPI_Scatter(a, N*N/size, MPI_INT, aa, N*N/size, MPI_INT,0,MPI_COMM_WORLD);
+
+    //broadcast second matrix to all processes
+    MPI_Bcast(b, N*N, MPI_INT, 0, MPI_COMM_WORLD);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+          //perform vector multiplication by all processes
+          for (i = 0; i < N; i++)
+            {
+                    for (j = 0; j < N; j++)
+                    {
+                            sum = sum + aa[j] * b[i][j];                
+                    }
+                    cc[i] = sum;
+                    sum = 0;
+            }
+
+    MPI_Gather(cc, N*N/size, MPI_INT, c, N*N/size, MPI_INT, 0, MPI_COMM_WORLD);
+
+    MPI_Barrier(MPI_COMM_WORLD);        
+    MPI_Finalize();
+    print_results("C = ", c);
 }
 
-void print_results(int a[MAT_SIZE][MAT_SIZE])
+void print_results(char *prompt, int a[N][N])
 {
     int i, j;
 
-    for (i = 0; i < MAT_SIZE; i++) {
-            for (j = 0; j < MAT_SIZE; j++) {
+    printf ("\n\n%s\n", prompt);
+    for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
                     printf(" %d", a[i][j]);
             }
             printf ("\n");
@@ -32,64 +61,3 @@ void print_results(int a[MAT_SIZE][MAT_SIZE])
     printf ("\n\n");
 }
 
-int main(int argc, char **argv)
-{   
-    // MPI Variables
-    int rank, size;
-
-    // Create the main matrices with the predefined size
-    int matrixA[MAT_SIZE][MAT_SIZE];
-    int matrixB[MAT_SIZE][MAT_SIZE];
-    int matrixC[MAT_SIZE][MAT_SIZE];
-
-    // Create the separate arrays for storing the scattered rows from the main matrices
-    int matrixARows[MAT_SIZE / size][MAT_SIZE];
-    int matrixCRows[MAT_SIZE / size][MAT_SIZE];
-
-
-    // Initialise the matrices
-    initialiseMatricies(matrixA, matrixB, matrixC);
-
-    // Start the MPI parallel sequence
-    MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-    //int count = MAT_SIZE * MAT_SIZE / (size * (MAT_SIZE / size));
-    int count = MAT_SIZE * MAT_SIZE / size;
-
-    // Scatter rows of first matrix to different processes
-    MPI_Scatter(matrixA, count, MPI_INT, matrixARows, count, MPI_INT, 0, MPI_COMM_WORLD);
-
-    // Broadcast second matrix to all processes
-    MPI_Bcast(matrixB, MAT_SIZE * MAT_SIZE, MPI_INT, 0, MPI_COMM_WORLD);
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    // Matrix Multiplication
-    int sum = 0;
-    for (int k = 0; k < MAT_SIZE/size; k++)
-    {
-      for (int i = 0; i < MAT_SIZE; i++)
-      {
-        for (int j = 0; j < MAT_SIZE; j++)
-        {
-            sum += matrixARows[k][j] * matrixB[j][i];
-        }
-        matrixCRows[k][i] = sum;
-        sum = 0;
-      }
-    }
-
-    // Gather the row sums from the buffer and put it in matrix C
-    MPI_Gather(matrixCRows, count, MPI_INT, matrixC, count, MPI_INT, 0, MPI_COMM_WORLD);
-
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    MPI_Finalize();
-
-    // if it's on the master node
-    if (rank == 0) print_results(matrixC);
-
-    return 0;
-}
