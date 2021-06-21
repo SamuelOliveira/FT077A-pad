@@ -25,7 +25,6 @@ void imprime_matriz(int *args, int tamanho);
 
 double speed_up(double ts, double tp);
 
-// https://stackoverflow.com/questions/3219393/stdlib-and-colored-output-in-c
 void options_list();
 
 #endif /* UTILS_H_ */

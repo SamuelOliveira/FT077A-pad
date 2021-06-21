@@ -1,0 +1,3 @@
+masternode slots=1
+workernode1 slots=4
+workernode2 slots=4
