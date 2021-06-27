@@ -5,11 +5,12 @@
 * @autores: Fabrício Soares
 */
 
+#include <math.h>
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
-#include <math.h>
+#include <stdbool.h>
 
 /** Definição do tipo de dados 'byte'
 * 'unsigned char': É o tipo que consegue gravar no intervalo que vai de 0 a 255 bytes
@@ -194,8 +195,6 @@ void getByteFrequency(FILE *entrada, unsigned int *listaBytes)
     rewind(entrada); // "rebobina o arquivo"
 
 }
-
-#include <stdbool.h>
 
 //  Obtem o código começando no nó n, utilizando o byte salvo em 'c', preenchendo 'buffer', desde o bucket 'tamanho'
 
