@@ -422,7 +422,6 @@ void CompressFile(const char *arquivoEntrada, const char *arquivoSaida)
 
     fclose(entrada);
     fclose(saida);
-
 }
 
 /** Função que descomprime um arquivo utilizando a compressão de huffman
