@@ -202,7 +202,6 @@ void getByteFrequency(FILE *entrada, unsigned int *listaBytes)
 / Função recursiva que percorre uma árvore de huffman e para ao encontrar o byte procurado (c)
 / @param: nó para iniciar a busca, byte a ser buscado, buffer para salvar os nós percorridos, posição para escrever
 **/
-
 bool pegaCodigo(nodeArvore *n, byte c, char *buffer, int tamanho)
 {
 
@@ -263,7 +262,6 @@ bool pegaCodigo(nodeArvore *n, byte c, char *buffer, int tamanho)
 /** Função que constrói a árvore de huffman
 * @param: a fila de prioridade.
 */
-
 nodeArvore *BuildHuffmanTree(unsigned *listaBytes)
 {
     // Lista com head apontando pra NULL e com campo 'elementos' valendo 0;
@@ -308,7 +306,6 @@ nodeArvore *BuildHuffmanTree(unsigned *listaBytes)
 /** Função que libera memória da árvore de huffman
 * @param: nó de uma (sub)árvore.
 */
-
 void FreeHuffmanTree(nodeArvore *n)
 {
     // Caso base da recursão, enquanto o nó não for NULL
@@ -327,7 +324,6 @@ void FreeHuffmanTree(nodeArvore *n)
 * Ideia do bitmasking surgiu da leitura de http://ellard.org/dan/www/CS50-95/s10.html
 * @param: arquivo para ler o byte, posição que se deseja mascarar o byte, byte a ser feita a checagem
 */
-
 int geraBit(FILE *entrada, int posicao, byte *aux )
 {
     // É hora de ler um bit?
@@ -350,7 +346,6 @@ void erroArquivo()
 /** Função que comprime um arquivo utilizando a compressão de huffman
 * @param: arquivo a comprimir, arquivo resultado da compressão
 */
-
 void CompressFile(const char *arquivoEntrada, const char *arquivoSaida)
 {
 
@@ -362,11 +357,11 @@ void CompressFile(const char *arquivoEntrada, const char *arquivoSaida)
 
     // Abre arquivo do parâmetro arquivoEntrada no modo leitura de binário
     FILE *entrada = fopen(arquivoEntrada, "rb");
-    (!entrada) ? erroArquivo() : NULL == NULL ;
+    (!entrada) ? erroArquivo() : NULL == NULL;
 
     // Abre arquivo do parâmetro arquivoSaida no modo escrita de binário
     FILE *saida = fopen(arquivoSaida, "wb");
-    (!saida) ? erroArquivo() : NULL == NULL ;
+    (!saida) ? erroArquivo() : NULL == NULL;
 
     getByteFrequency(entrada, listaBytes);
 

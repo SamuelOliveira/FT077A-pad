@@ -4,30 +4,41 @@
 #include <string.h>
 #include <unistd.h>
 #include <wchar.h>
+#include <sys/stat.h>
 #define _GNU_SOURCE // necessário porque getline() é extensão GNU
 
 #define MAX_FILE_NAME 100
 
 #define BUFFER_SIZE 50
 
-void concatenar ( FILE *base, FILE *copiado);
+typedef struct fileHeader
+{
+    int files;
+    int sizes[];
+} fileHeader;
+
+void concatenar (FILE *base, FILE *copiado);
 
 int main() {
     wchar_t str[BUFFER_SIZE];
     size_t  strSize;
+    struct stat sb;
+    // https://www.delftstack.com/pt/howto/c/file-size-in-c/
 
     char buffer[200]; // Buffer to store data
     FILE *base;
     FILE *arquivo2;
     FILE *arquivo3;
-    size_t len= 100;
+    size_t len = 100;
 
+    fileHeader header;
+    
     int line = 0;
 
     char *linha= malloc(len);
 
     base = fopen("base.txt", "r");
-    arquivo2 = fopen("arquivo2.txt", "a");
+    arquivo2 = fopen("arquivo2.txt", "w");
     arquivo3 = fopen("arquivo3.txt", "w");
 
     while ((getline(&linha, &len, base) > 0) && (line < 2))
@@ -49,7 +60,26 @@ int main() {
     fclose(base);
     fclose(arquivo3);
     fclose(arquivo2);
-    remove("arquivo2.txt");
+       
+
+    header.files = 3;
+    stat("base.txt", &sb);
+    header.sizes[0] = sb.st_size;
+    sb.st_size = 0;
+    stat("arquivo2.txt", &sb);
+    header.sizes[1] = sb.st_size;
+    sb.st_size = 0;
+    stat("arquivo3.txt", &sb);
+    header.sizes[2] = sb.st_size;
+    sb.st_size = 0;
+    printf("tamanho do Base %d\n", header.sizes[0]);
+    printf("tamanho do arquivo2 %d\n", header.sizes[1]);
+    printf("tamanho do arquivo3 %d\n", header.sizes[2]);
+
+    // fclose(base);
+    // fclose(arquivo3);
+    // fclose(arquivo2);
+    // remove("arquivo2.txt");
 
     free(linha);
 
