@@ -5,58 +5,36 @@
 * @autores: Fabrício Soares
 */
 
-#include <math.h>
-#include <time.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
+// #include <math.h>
+// #include <time.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
+// #include <stdbool.h>
 
-/** Definição do tipo de dados 'byte'
-* 'unsigned char': É o tipo que consegue gravar no intervalo que vai de 0 a 255 bytes
+#include "../Headers/huffman.h"
+
+/** Função para remover a extenção do nome arquivo.
+* @author: https://stackoverflow.com/questions/43163677/how-do-i-strip-a-file-extension-from-a-string-in-c
+* @param: um nome de arquivo.
 */
-typedef unsigned char byte;
-
-/** Definição da árvore */
-typedef struct nodeArvore
+void strip_ext(char *fname)
 {
-    int                 frequencia;
-    byte                c;
-    struct nodeArvore   *esquerda;
-    struct nodeArvore   *direita;
-} nodeArvore;
+    char *end = fname + strlen(fname);
 
-/** Definição da fila de prioridade (implementada como lista simplesmente encadeada) */
+    while (end > fname && *end != '.') {
+        --end;
+    }
 
-typedef struct nodeLista
-{
-    nodeArvore          *n;
-    struct nodeLista    *proximo;
-} nodeLista;
-
-typedef struct lista
-{
-    nodeLista   *head;
-    int         elementos;
-} lista;
-
-/**
-* A função strdup é dependente de implementação nas plataformas não POSIX (Windows, etc)
-* Segue uma implementação desta função como solução para o problema.
-*/
-
-char *strdup(const char *s)
-{
-    char *p = malloc(strlen(s) + 1);
-    if (p) strcpy(p, s);
-    return p;
+    if (end > fname) {
+        *end = '\0';
+    }
 }
 
 /** Função que faz alocação de memória e trata os ponteiros soltos acerca de nós da lista encadeada.
 * Obs: cada nó da lista encadeada é conectado a um nó 'raiz' de árvore.
 * @param: um nó de uma árvore.
 */
-
 nodeLista *novoNodeLista(nodeArvore *nArv)
 {
     // Aloca memória
@@ -75,7 +53,6 @@ nodeLista *novoNodeLista(nodeArvore *nArv)
 /** Função que faz alocação de memória e trata os ponteiros soltos acerca de nós da árvore
 * @param: o byte a ser gravado no nó, a frequencia do byte, ponteiros para os nós filhos
 */
-
 nodeArvore *novoNodeArvore(byte c, int frequencia, nodeArvore *esquerda, nodeArvore *direita)
 {
     // Aloca memória
@@ -95,7 +72,6 @@ nodeArvore *novoNodeArvore(byte c, int frequencia, nodeArvore *esquerda, nodeArv
 /** Função que um novo nó na lista encadeada que representa a fila de prioridade.
 * @param: um nó previamente criado, a lista que receberá o nó
 */
-
 void insereLista(nodeLista *n, lista *l)
 {
     // Se a lista passada como parâmetro não tem um nó no início (vazia), insira o nó no início
@@ -144,7 +120,6 @@ void insereLista(nodeLista *n, lista *l)
 * (faz backup do nó e o desconecta da lista)
 * @param: uma lista encadeada.
 */
-
 nodeArvore *popMinLista(lista *l)
 {
 
@@ -170,7 +145,6 @@ nodeArvore *popMinLista(lista *l)
 /** Função que conta a frequência de ocorrências dos bytes de um dado arquivo
 * @param: um arquivo, uma lista de bytes
 */
-
 void getByteFrequency(FILE *entrada, unsigned int *listaBytes)
 {
 
@@ -195,6 +169,8 @@ void getByteFrequency(FILE *entrada, unsigned int *listaBytes)
     rewind(entrada); // "rebobina o arquivo"
 
 }
+
+// #include <stdbool.h>
 
 //  Obtem o código começando no nó n, utilizando o byte salvo em 'c', preenchendo 'buffer', desde o bucket 'tamanho'
 
@@ -357,11 +333,11 @@ void CompressFile(const char *arquivoEntrada, const char *arquivoSaida)
 
     // Abre arquivo do parâmetro arquivoEntrada no modo leitura de binário
     FILE *entrada = fopen(arquivoEntrada, "rb");
-    (!entrada) ? erroArquivo() : NULL == NULL;
+    (!entrada) ? erroArquivo() : NULL == NULL ;
 
     // Abre arquivo do parâmetro arquivoSaida no modo escrita de binário
     FILE *saida = fopen(arquivoSaida, "wb");
-    (!saida) ? erroArquivo() : NULL == NULL;
+    (!saida) ? erroArquivo() : NULL == NULL ;
 
     getByteFrequency(entrada, listaBytes);
 
@@ -452,7 +428,6 @@ void CompressFile(const char *arquivoEntrada, const char *arquivoSaida)
 /** Função que descomprime um arquivo utilizando a compressão de huffman
 * @param: arquivo a descomprimir, arquivo resultado da descompressão
 */
-
 void DecompressFile(const char *arquivoEntrada, const char *arquivoSaida)
 {
 
@@ -514,60 +489,4 @@ void DecompressFile(const char *arquivoEntrada, const char *arquivoSaida)
 
     fclose(saida);
     fclose(entrada);
-}
-
-
-int main(int argc, char *argv[])
-{
-    // Caso os parâmetros informados sejam insuficientes
-    if (argc < 4)
-    {
-        printf("Uso: huffman [OPCAO] [ARQUIVO] [ARQUIVO]\n\n");
-        printf("Opcoes:\n");
-        printf("\t-c\tComprime\n");
-        printf("\t-x\tDescomprime\n");
-        printf("\nExemplo: ./huffman -c comprima.isso nisso.hx\n");
-        return 0;
-    }
-
-    if (strcmp("-c", argv[1]) == 0)
-    {
-        if (strstr(argv[3], ".hx"))
-        {
-            CompressFile(argv[2], argv[3]);
-        }
-        else
-        {
-            printf("O arquivo resultante da compressao deve ter a extensao '.hx'.\n");
-            printf("Exemplo: \n\t./huffman -c comprima.isso nisso.hx\n");
-            return 0;
-        }
-    }
-    else if (strcmp("-x", argv[1]) == 0)
-    {
-        if (strstr(argv[2], ".hx"))
-        {
-            DecompressFile(argv[2], argv[3]);
-        }
-        else
-        {
-            printf("O arquivo a ser descomprimido deve ter a extensao '.hx'.\n");
-            printf("Exemplo: \n\t./huffman -x descomprime.hx nisso.extensao\n");
-            return 0;
-        }
-    }
-    else
-    {
-        printf("Uso: huffman [OPCAO] [ARQUIVO] [ARQUIVO]\n\n");
-        printf("Opcoes:\n");
-        printf("\t-c\tComprime\n");
-        printf("\t-x\tDescomprime\n");
-        printf("\nExemplo: ./huffman -c comprima.isso nisso.hx\n");
-        return 0;
-    }
-
-    //CompressFile("meslo.ttf", "meslo.hx");
-    //DecompressFile("meslo.hx", "meslo_copy.ttf");
-
-    return 0;
 }
