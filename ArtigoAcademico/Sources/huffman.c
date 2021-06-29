@@ -22,7 +22,7 @@ double CompressName(const char *arquivoEntrada, const char *arquivoSaida)
 
     // Abre arquivo do parâmetro arquivoSaida no modo escrita de binário
     FILE *saida = fopen(arquivoSaida, "wb");
-    (!saida) ? erroArquivo() : NULL == NULL ;
+    (!saida) ? erroArquivo() : NULL == NULL;
 
     getByteFrequency(entrada, listaBytes);
 
