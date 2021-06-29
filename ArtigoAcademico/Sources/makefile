@@ -39,7 +39,7 @@ $(OBJ)/%.o: $(SRC)/%.cpp $(INCLUDE)/%.hpp
 
 #Linkar e criar o executavel
 $(NOME_EXECUTAVEL): $(OBJETOS)
-	$(COMPILADOR) $(FLAGS) $(OBJETOS) $(LIBS) -o $(BIN)/$@
+	$(COMPILADOR) -fopenmp $(FLAGS) $(OBJETOS) $(LIBS) -o $(BIN)/$@
 
 #Executar programa
 run:

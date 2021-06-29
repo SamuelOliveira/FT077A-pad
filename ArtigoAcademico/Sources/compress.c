@@ -6,7 +6,7 @@
 
 #include "../Headers/utils.h"
 #include "../Headers/huffman.h"
-
+#include "../Headers/omp_compress.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     char *ret;
     char *tmp;
     char optc = 0;
-    int split = 3;
+    int split = 2;
 
     // Variaveis para os parametros e argumentos
     short option = 0;  // Opcao c ou d
@@ -72,80 +72,69 @@ int main(int argc, char *argv[])
     strip_ext(fileTarget);
 
     if(option==1) {
-        long sum = 0;
-        long tamanho;
-        char line[256];
-        int numLin, modLin;
-        char* strings[split];
 
         strcat(fileTarget, ".hx");
         file  = fopen(fileSource, "r");
+
+        file_compress_opm(file,split);
+
+        // long sum = 0;
+        // long tamanho;
+        // char line[256];
+        // int numLin, modLin;
+        // char* strings[split];
+
+        // strcat(fileTarget, ".hx");
+        // file  = fopen(fileSource, "r");
         
-        tamanho = fline(file);
+        // tamanho = fline(file);
 
-        for(int i=0; i<split; i++)
-        {
-            int l = 0;
-            size_t len = 100;
-            long posit = 1;
-
-            FILE* fileSplit;
-            char nameSplit[50];
-            char dataSplit[50];
-
-            snprintf(nameSplit, 50, "fileSplit_%d", i+1);
-            snprintf(dataSplit, 50, "dataSplit_%d.hx", i+1);
-
-            fileSplit = fopen(nameSplit, "w+");
-
-            // numero de linhas para split do arquivo
-            numLin = (int) (tamanho / split);
-
-            if(split == i+1)
-            {
-                modLin = (int) (tamanho % split);
-                numLin += modLin;
-            }
-
-            fseek(file, 0, SEEK_SET);
-            char *linha= malloc(len);
-
-            while (getline(&linha, &len, file) > 0)
-            {
-                if (l >= sum && l <= (numLin+sum)) {
-                    if (fputs(linha, fileSplit) == EOF)
-                        erroGravacao();
-                }
-                l++;
-            }
-
-            sum += numLin;
-            fclose(fileSplit);
-
-            filesOpen->size[i] = CompressName(nameSplit, dataSplit);
-            strings[i] = dataSplit;
-
-            remove(nameSplit);
-        }
-
-        
-
-        // fileOf = fopen(fileName, "w+");
-
-        // fwrite(filesOpen, sizeof(fileHeader) + (sizeof(int) * split), 1, fileOf);
-
-        // for(int k=0; k<split; k++)
+        // for(int i=0; i<split; i++)
         // {
-        //     data  = fopen(strings[k], "r");
-        //     fwrite(data, sizeof(data), 1, fileOf);
-        //     while (fgets(line, sizeof(line), data)) {
-        //         if (fputs(line, fileOf) == EOF)
-        //             erroGravacao();
+        //     int l = 0;
+        //     size_t len = 100;
+        //     long posit = 1;
+
+        //     FILE* fileSplit;
+        //     char nameSplit[50];
+        //     char dataSplit[50];
+
+        //     snprintf(nameSplit, 50, "fileSplit_%d", i+1);
+        //     snprintf(dataSplit, 50, "dataSplit_%d.hx", i+1);
+
+        //     fileSplit = fopen(nameSplit, "w+");
+
+        //     // numero de linhas para split do arquivo
+        //     numLin = (int) (tamanho / split);
+
+        //     if(split == i+1)
+        //     {
+        //         modLin = (int) (tamanho % split);
+        //         numLin += modLin;
         //     }
-        //     fclose(data);
+
+        //     fseek(file, 0, SEEK_SET);
+        //     char *linha= malloc(len);
+
+        //     while (getline(&linha, &len, file) > 0)
+        //     {
+        //         if (l >= sum && l <= (numLin+sum)) {
+        //             if (fputs(linha, fileSplit) == EOF)
+        //                 erroGravacao();
+        //         }
+        //         l++;
+        //     }
+
+        //     sum += numLin;
+        //     fclose(fileSplit);
+
+        //     filesOpen->size[i] = CompressName(nameSplit, dataSplit);
+        //     strings[i] = dataSplit;
+
+        //     remove(nameSplit);
         // }
 
-        fclose(fileOf);
+        // fclose(fileOf);
     }
 
     if(option==2) {
