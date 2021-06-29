@@ -43,12 +43,6 @@ typedef struct lista
 } lista;
 
 
-/** Função para remover a extenção do nome arquivo.
-* @author: https://stackoverflow.com/questions/43163677/how-do-i-strip-a-file-extension-from-a-string-in-c
-* @param: um nome de arquivo.
-*/
-void strip_ext(char *fname);
-
 /** Função que faz alocação de memória e trata os ponteiros soltos acerca de nós da lista encadeada.
 * Obs: cada nó da lista encadeada é conectado a um nó 'raiz' de árvore.
 * @param: um nó de uma árvore.

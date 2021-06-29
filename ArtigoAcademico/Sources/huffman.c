@@ -5,31 +5,8 @@
 * @autores: Fabrício Soares
 */
 
-// #include <math.h>
-// #include <time.h>
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
-// #include <stdbool.h>
-
 #include "../Headers/huffman.h"
 
-/** Função para remover a extenção do nome arquivo.
-* @author: https://stackoverflow.com/questions/43163677/how-do-i-strip-a-file-extension-from-a-string-in-c
-* @param: um nome de arquivo.
-*/
-void strip_ext(char *fname)
-{
-    char *end = fname + strlen(fname);
-
-    while (end > fname && *end != '.') {
-        --end;
-    }
-
-    if (end > fname) {
-        *end = '\0';
-    }
-}
 
 /** Função que faz alocação de memória e trata os ponteiros soltos acerca de nós da lista encadeada.
 * Obs: cada nó da lista encadeada é conectado a um nó 'raiz' de árvore.

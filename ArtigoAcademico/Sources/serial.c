@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
-#include "consts.h"
-#include "serial.h"
+#include "../Headers/consts.h"
+#include "../Headers/serial.h"
 
 /**
  * @brief Produtos de matrizes, r = a * b
