@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#define _GNU_SOURCE // necessário porque getline() é extensão GNU
 
 #include "../Headers/utils.h"
 #include "../Headers/consts.h"
@@ -23,6 +24,39 @@ void options_list()
 void erroGravacao()
 {
     printf("Erro ao tentar gravar os dados!\n");
+}
+
+long fsize(FILE *file)
+{
+    long tamanho;
+
+    fseek(file, 0, SEEK_END);
+    tamanho = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    return tamanho;
+}
+
+long fline(FILE *file)
+{
+    long l = 1;
+    size_t len = 100;
+
+    fseek(file, 0, SEEK_SET);
+
+    char *linha= malloc(len);
+    while (getline(&linha, &len, file) > 0) l++;
+
+    // int c = 0;
+    // while(!feof(file))
+    // {
+    //     c = fgetc(file);
+    //     if(c == '\n') l++;
+    // }
+
+    fseek(file, 0, SEEK_SET);
+
+    return l;
 }
 
 /** Função para remover a extenção do nome arquivo.

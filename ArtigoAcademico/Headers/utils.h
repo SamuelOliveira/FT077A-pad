@@ -7,11 +7,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+typedef struct fileHeader
+{
+    int file;
+    int size[];
+} fileHeader;
+
 double speed_up(double ts, double tp);
 
 void options_list();
-
 void erroGravacao();
+
+long fsize(FILE *file);
+long fline(FILE *file);
 
 /** Função para remover a extenção do nome arquivo.
 * @author: https://stackoverflow.com/questions/43163677/how-do-i-strip-a-file-extension-from-a-string-in-c

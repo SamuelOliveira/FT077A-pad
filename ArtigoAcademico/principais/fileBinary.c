@@ -37,17 +37,17 @@ int main () {
 
     printf("\n");
 
-    fileTo = fopen(fileName, "r");
-    fread(&file, sizeof(int), 1, fileTo);
-    fseek(fileTo, 0, SEEK_SET);
+    // fileTo = fopen(fileName, "r");
+    // fread(&file, sizeof(int), 1, fileTo);
+    // fseek(fileTo, 0, SEEK_SET);
 
-    filesInfo = (fileHeader *)malloc(sizeof(fileHeader) + (sizeof(int) * file));
-    fread(filesInfo, sizeof(fileHeader) + (sizeof(int) * file), 1, fileTo);
+    // filesInfo = (fileHeader *)malloc(sizeof(fileHeader) + (sizeof(int) * file));
+    // fread(filesInfo, sizeof(fileHeader) + (sizeof(int) * file), 1, fileTo);
 
-    printf("%d\n",filesInfo->file);
+    // printf("%d\n",filesInfo->file);
 
-    for(int j=0; j<filesInfo->file; j++)
-        printf("%d\n",filesInfo->size[j]);
+    // for(int j=0; j<filesInfo->file; j++)
+    //     printf("%d\n",filesInfo->size[j]);
 
-    fclose(fileTo);
+    // fclose(fileTo);
 }

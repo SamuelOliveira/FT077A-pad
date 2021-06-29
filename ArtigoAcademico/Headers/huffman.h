@@ -43,6 +43,8 @@ typedef struct lista
 } lista;
 
 
+double CompressName(const char *arquivoEntrada, const char *arquivoSaida);
+
 /** Função que faz alocação de memória e trata os ponteiros soltos acerca de nós da lista encadeada.
 * Obs: cada nó da lista encadeada é conectado a um nó 'raiz' de árvore.
 * @param: um nó de uma árvore.

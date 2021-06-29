@@ -7,6 +7,111 @@
 
 #include "../Headers/huffman.h"
 
+double CompressName(const char *arquivoEntrada, const char *arquivoSaida)
+{
+
+    clock_t inicio, final;
+    double tempoGasto;
+    inicio = clock();
+
+    unsigned listaBytes[256] = {0};
+
+    // Abre arquivo do parâmetro arquivoEntrada no modo leitura de binário
+    FILE *entrada = fopen(arquivoEntrada, "rb");
+    (!entrada) ? erroArquivo() : NULL == NULL ;
+
+    // Abre arquivo do parâmetro arquivoSaida no modo escrita de binário
+    FILE *saida = fopen(arquivoSaida, "wb");
+    (!saida) ? erroArquivo() : NULL == NULL ;
+
+    getByteFrequency(entrada, listaBytes);
+
+    // Populando a árvore com a lista de frequência de bytes
+    nodeArvore *raiz = BuildHuffmanTree(listaBytes);
+
+    // Grava a lista de frequência nos primeiros 256 bytes do arquivo
+    fwrite(listaBytes, 256, sizeof(listaBytes[0]), saida);
+
+    // Move o ponteiro do stream 'saida' para a posição posterior ao tamanho de um unsigned int
+    // É aqui que posteriormente será salvo o valor da variável 'tamanho'
+    fseek(saida, sizeof(unsigned int), SEEK_CUR);
+
+    byte c;
+    unsigned tamanho = 0;
+    byte aux = 0;
+
+    /***
+    * fread( array/bloco de memoria , tamanho de cada elemento, quantos elementos, arquivo de entrada )
+    * fread retorna a quantidade de bytes lidos com sucesso
+    *
+    * Faz a leitura de 1 bloco de tamanho 1 byte a partir do arquivo 'entrada'
+    * e salva no espaco de memoria de 'c'.
+    ***/
+
+    while (fread(&c, 1, 1, entrada) >= 1)
+    {
+
+        // Cria um buffer vazio
+        char buffer[1024] = {0};
+
+        // Busca o código começando no nó 'raiz', utilizando o byte salvo em 'c', preenchendo 'buffer', desde o bucket deste último
+        pegaCodigo(raiz, c, buffer, 0);
+
+        // Laço que percorre o buffer
+        for (char *i = buffer; *i; i++)
+        {
+            // Se o caractere na posição nodeAtual for '1'
+            if (*i == '1')
+            {
+                // 2 elevado ao resto da divisão de 'tamanho' por 8
+                // que é o mesmo que jogar um '1' na posição denotada por 'tamanho % 8'
+                //aux = aux + pow(2, tamanho % 8);
+                aux = aux | (1 << (tamanho % 8));
+            }
+
+            tamanho++;
+
+            // Já formou um byte, é hora de escrevê-lo no arquivo
+            if (tamanho % 8 == 0)
+            {
+                fwrite(&aux, 1, 1, saida);
+                // Zera a variável auxiliar
+                aux = 0;
+            }
+        }
+    }
+
+    // Escreve no arquivo o que sobrou
+    fwrite(&aux, 1, 1, saida);
+
+    // Move o ponteiro do stream para 256 vezes o tamanho de um unsigned int, a partir do início dele (SEEK_SET)
+    fseek(saida, 256 * sizeof(unsigned int), SEEK_SET);
+
+    // Salva o valor da variável 'tamanho' no arquivo saida
+    fwrite(&tamanho, 1, sizeof(unsigned), saida);
+
+    final = clock();
+    tempoGasto = (double)(final - inicio) / CLOCKS_PER_SEC;
+
+    // Calcula tamanho dos arquivos
+    fseek(entrada, 0L, SEEK_END);
+    double tamanhoEntrada = ftell(entrada);
+
+    fseek(saida, 0L, SEEK_END);
+    double tamanhoSaida = ftell(saida);
+
+    FreeHuffmanTree(raiz);
+
+    printf("Arquivo de entrada: %s (%g bytes)\nArquivo de saida: %s (%g bytes)\nTempo gasto: %gs\n", arquivoEntrada, tamanhoEntrada / 1000, arquivoSaida, tamanhoSaida / 1000, tempoGasto);
+    printf("Taxa de compressao: %d%%\n", (int)((100 * tamanhoSaida) / tamanhoEntrada));
+
+    fclose(entrada);
+    fclose(saida);
+
+    return tamanhoSaida;
+}
+
+
 
 /** Função que faz alocação de memória e trata os ponteiros soltos acerca de nós da lista encadeada.
 * Obs: cada nó da lista encadeada é conectado a um nó 'raiz' de árvore.

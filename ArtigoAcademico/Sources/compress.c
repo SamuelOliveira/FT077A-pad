@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#define _GNU_SOURCE // necessário porque getline() é extensão GNU
 
 #include "../Headers/utils.h"
 #include "../Headers/huffman.h"
@@ -20,8 +21,16 @@ int main(int argc, char *argv[])
 
     char fileSource[50];
     char fileTarget[50];
+    char *fileName = "fileBinary.hx";
 
-    FILE* file;
+    FILE *file;
+    FILE *data;
+    FILE *fileOf;
+    fileHeader *filesOpen;
+
+    filesOpen = (fileHeader *)malloc(sizeof(fileHeader) + (sizeof(int) * split));
+
+    filesOpen->file = split;
 
     // Sem argumentos
     if(argc == 1) {
@@ -64,22 +73,27 @@ int main(int argc, char *argv[])
     if(option==1) {
         long sum = 0;
         long tamanho;
+        char line[256];
         int numLin, modLin;
+        char* strings[split];
 
         strcat(fileTarget, ".hx");
         file  = fopen(fileSource, "r");
         
-        fseek(file, 0, SEEK_SET);
-
-        tamanho = ftell(file);
+        tamanho = fline(file);
 
         for(int i=0; i<split; i++)
         {
-            char line[256];
+            int l = 0;
+            size_t len = 100;
+            long posit = 1;
+            // char line[256];
             FILE* fileSplit;
             char nameSplit[50];
+            char dataSplit[50];
 
             snprintf(nameSplit, 50, "fileSplit_%d", i+1);
+            snprintf(dataSplit, 50, "dataSplit_%d.hx", i+1);
 
             fileSplit = fopen(nameSplit, "w+");
 
@@ -92,38 +106,43 @@ int main(int argc, char *argv[])
                 numLin += modLin;
             }
 
-            fseek(file, sum, SEEK_CUR);
+            fseek(file, 0, SEEK_SET);
+            char *linha= malloc(len);
 
-            while (fgets(line, sizeof(line), file)) {
-                if (fputs(line, fileSplit) == EOF)
-                    erroGravacao();
+            while (getline(&linha, &len, file) > 0)
+            {
+                if (l >= sum && l <= (numLin+sum)) {
+                    if (fputs(linha, fileSplit) == EOF)
+                        erroGravacao();
+                }
+                l++;
             }
 
             sum += numLin;
             fclose(fileSplit);
 
-            // while (fgets(line, sizeof(line), file)) {
-            //     l++;
-            //     if (l <= 2) {
-            //         if (fputs(line, file1) == EOF)
-            //             erroGravacao();
-            //     };
-            //     if (l >= 3 && l <= 5) {
-            //         if (fputs(line, file2) == EOF)
-            //             erroGravacao();
-            //     };
-            // }
+            filesOpen->size[i] = CompressName(nameSplit, dataSplit);
+            strings[i] = dataSplit;
 
-            // printf("%d\n",numLin);
-
-            // int l = 0;
-            // char line[256];
-            // FILE* fileSplit = fopen(fileName1, "w+");
+            remove(nameSplit);
         }
 
+        fileOf = fopen(fileName, "w+");
 
-        // SplitFile
-        // CompressFile(fileSource, fileTarget);        
+        fwrite(filesOpen, sizeof(fileHeader) + (sizeof(int) * split), 1, fileOf);
+
+        for(int k=0; k<split; k++)
+        {
+            data  = fopen(strings[k], "r");
+            fwrite(data, sizeof(data), 1, fileOf);
+            // while (fgets(line, sizeof(line), data)) {
+            //     if (fputs(line, fileOf) == EOF)
+            //         erroGravacao();
+            // }
+            fclose(data);
+        }
+
+        fclose(fileOf);
     }
 
     if(option==2) {
