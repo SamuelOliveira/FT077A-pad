@@ -8,9 +8,6 @@
 #include "../Headers/huffman.h"
 
 
-
-
-
 int main(int argc, char *argv[])
 {
     // Variaveis de controle para posição do parametro
@@ -130,6 +127,8 @@ int main(int argc, char *argv[])
 
             remove(nameSplit);
         }
+
+        
 
         // fileOf = fopen(fileName, "w+");
 
