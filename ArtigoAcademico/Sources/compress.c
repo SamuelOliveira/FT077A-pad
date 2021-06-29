@@ -7,6 +7,10 @@
 #include "../Headers/utils.h"
 #include "../Headers/huffman.h"
 
+
+
+
+
 int main(int argc, char *argv[])
 {
     // Variaveis de controle para posição do parametro
@@ -87,7 +91,7 @@ int main(int argc, char *argv[])
             int l = 0;
             size_t len = 100;
             long posit = 1;
-            // char line[256];
+
             FILE* fileSplit;
             char nameSplit[50];
             char dataSplit[50];
@@ -127,20 +131,20 @@ int main(int argc, char *argv[])
             remove(nameSplit);
         }
 
-        fileOf = fopen(fileName, "w+");
+        // fileOf = fopen(fileName, "w+");
 
-        fwrite(filesOpen, sizeof(fileHeader) + (sizeof(int) * split), 1, fileOf);
+        // fwrite(filesOpen, sizeof(fileHeader) + (sizeof(int) * split), 1, fileOf);
 
-        for(int k=0; k<split; k++)
-        {
-            data  = fopen(strings[k], "r");
-            fwrite(data, sizeof(data), 1, fileOf);
-            // while (fgets(line, sizeof(line), data)) {
-            //     if (fputs(line, fileOf) == EOF)
-            //         erroGravacao();
-            // }
-            fclose(data);
-        }
+        // for(int k=0; k<split; k++)
+        // {
+        //     data  = fopen(strings[k], "r");
+        //     fwrite(data, sizeof(data), 1, fileOf);
+        //     while (fgets(line, sizeof(line), data)) {
+        //         if (fputs(line, fileOf) == EOF)
+        //             erroGravacao();
+        //     }
+        //     fclose(data);
+        // }
 
         fclose(fileOf);
     }
