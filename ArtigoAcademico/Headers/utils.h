@@ -13,6 +13,14 @@ typedef struct fileHeader
     int size[];
 } fileHeader;
 
+typedef struct argsThread
+{
+    int args;
+    int size;
+    int soma;
+    char *name;
+} argsThread;
+
 double speed_up(double ts, double tp);
 
 void options_list();

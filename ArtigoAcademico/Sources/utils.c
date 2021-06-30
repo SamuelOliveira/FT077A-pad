@@ -28,35 +28,30 @@ void erroGravacao()
 
 long fsize(FILE *file)
 {
-    long tamanho;
+    long size;
 
     fseek(file, 0, SEEK_END);
-    tamanho = ftell(file);
+
+    size = ftell(file);
+
     fseek(file, 0, SEEK_SET);
 
-    return tamanho;
+    return size;
 }
 
 long fline(FILE *file)
 {
-    long l = 1;
+    long i = 1;
     size_t len = 100;
 
     fseek(file, 0, SEEK_SET);
 
-    char *linha= malloc(len);
-    while (getline(&linha, &len, file) > 0) l++;
-
-    // int c = 0;
-    // while(!feof(file))
-    // {
-    //     c = fgetc(file);
-    //     if(c == '\n') l++;
-    // }
+    char *linha = malloc(len);
+    while (getline(&linha, &len, file) > 0) i++;
 
     fseek(file, 0, SEEK_SET);
 
-    return l;
+    return i;
 }
 
 /** Função para remover a extenção do nome arquivo.
