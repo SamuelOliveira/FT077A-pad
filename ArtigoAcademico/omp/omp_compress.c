@@ -39,8 +39,8 @@ void file_compress_opm(const char *fileSource, int thds)
             size_t len = 100;
             long posit = 1;
 
-            snprintf(nameSplit, 50, "fileSplit_%d", i+1);
-            snprintf(dataSplit, 50, "dataSplit_%d.hx", i+1);
+            snprintf(nameSplit, 50, "split_%d", i+1);
+            snprintf(dataSplit, 50, "chuck_%d.hx", i+1);
             fileSplit = fopen(nameSplit, "w+");
             numLin = (int) (tamanho / thds);
 

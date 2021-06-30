@@ -13,12 +13,12 @@
 
 void file_compress_pth(const char *fileSource, int thds)
 {
-    long t;
+    int t;
     void *status;
     int numLin, modLin;
     pthread_t threads[thds];
 
-    argsThread *args = (argsThread *)malloc(sizeof(argsThread));;
+    argsThread *args = (argsThread *)malloc(sizeof(argsThread) + (sizeof(int) * 5));
 
     file = fopen(fileSource, "rb");
     args->line = fline(file);
@@ -27,7 +27,8 @@ void file_compress_pth(const char *fileSource, int thds)
 
     for (t=0; t<thds; t++)
     {
-        args->args = t;
+        args->args = t+1;
+        printf("Thread %d\n",t);
         pthread_create(&threads[t], NULL, file_compress, (void *)args);
     }
 
@@ -41,10 +42,8 @@ void file_compress_pth(const char *fileSource, int thds)
 
 void *file_compress(void *args)
 {
-    argsThread *thread = (argsThread *)malloc(sizeof(argsThread));
+    argsThread *thread = (argsThread *)malloc(sizeof(argsThread) + (sizeof(int) * 5));
     thread = (argsThread *) args;
-
-    printf("Linhas %d task %d\n",thread->line, thread->args);
 
     FILE* fileSplit;
     char nameSplit[50];
@@ -57,8 +56,8 @@ void *file_compress(void *args)
     size_t len = 100;
     long posit = 1;
 
-    snprintf(nameSplit, 50, "fileSplit_%d", thread->args);
-    snprintf(dataSplit, 50, "dataSplit_%d.hx", thread->args);
+    snprintf(nameSplit, 50, "split_%d", thread->args);
+    snprintf(dataSplit, 50, "chunk_%d.hx", thread->args);
     fileSplit = fopen(nameSplit, "w+");
 
     numLin = (int) (thread->line / thread->thds);
