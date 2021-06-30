@@ -20,8 +20,7 @@ typedef struct argsThread
     long thds;
     long thdi;
     long line;
-    long numLin;
-    long sumLin;
+    long size;
 } argsThread;
 
 double speed_up(double ts, double tp);

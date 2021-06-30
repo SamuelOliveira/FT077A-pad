@@ -11,24 +11,28 @@
 #include "../Headers/huffman.h"
 #include "../Headers/pth_compress.h"
 
+long sumLin;
 
 void file_compress_pth(const char *fileSource, int thds)
 {
     long thdi;
     long line;
+    long size;
     void *status;
     pthread_t threads[thds];
     struct argsThread *args;
 
     file = fopen(fileSource, "rb");
     line = fline(file);
+    size = fsize(file);
+    sumLin = 0;
 
     for (thdi=0; thdi<thds; thdi++)
     {
-        args = (argsThread *)malloc(sizeof(argsThread) + (sizeof(long) * 5));
-        (*args).sumLin = 0;
+        args = (argsThread *)malloc(sizeof(argsThread) + (sizeof(long) * 4));
         (*args).thds = thds;
         (*args).line = line;
+        (*args).size = size;
         (*args).thdi = thdi+1;
         pthread_create(&threads[thdi], NULL, file_compress, (void *)args);
     }
@@ -46,6 +50,8 @@ void *file_compress(void *args)
     argsThread *thread;
     thread = (argsThread *)args;
 
+    printf("Size %ld\n",thread->size);
+
     FILE* fileSplit;
     char nameSplit[50];
     char dataSplit[50];
@@ -54,7 +60,6 @@ void *file_compress(void *args)
     long numLin, modLin;
 
     int l = 0;
-    long posit = 1;
     size_t len = 100;
 
     snprintf(nameSplit, 50, "split_%ld", thread->thdi);
@@ -69,20 +74,22 @@ void *file_compress(void *args)
         numLin += modLin;
     }
 
+    printf("soma1 %ld\n",sumLin);
+
     fseek(file, 0, SEEK_SET);
     char *linha= malloc(len);
 
     while (getline(&linha, &len, file) > 0)
     {
-        if (l >= thread->sumLin && l <= (numLin+thread->sumLin)) {
+        if (l >= sumLin && l < (numLin+sumLin)) {
             if (fputs(linha, fileSplit) == EOF)
                 erroGravacao();
         }
         l++;
     }
 
-    thread->numLin = numLin;
-    thread->sumLin += numLin;
+    sumLin += numLin;
+    printf("soma2 %ld\n",sumLin);
 
     fclose(fileSplit);
 
@@ -92,5 +99,4 @@ void *file_compress(void *args)
     remove(nameSplit);
 
     pthread_exit(NULL);
-
 }
