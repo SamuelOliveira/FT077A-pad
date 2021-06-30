@@ -14,21 +14,31 @@ void file_compress_pth(const char *fileSource, int thds)
 {
     long t;
     void *status;
+    int numLin, modLin;
     pthread_t threads[thds];
-    // char source[] = "japoka";
 
     argsThread *args = (argsThread *)malloc(sizeof(argsThread));
 
     file = fopen(fileSource, "rb");
     args->line = fline(file);
-    // args->name = source;
-    args->thds = thds;
-    args->soma = 0;
+    args->sumLin = 0;
 
     for (t=0; t<thds; t++)
     {
         args->args = t;
+
+        numLin = (int) (args->line / thds);
+
+        if(args->args == thds)
+        {
+            modLin = (int) (args->line % thds);
+            numLin += modLin;
+        }
+
         pthread_create(&threads[t], NULL, file_compress, (void *) args);
+
+        args->numLin = numLin;
+        args->sumLin += numLin;
     }
 
     for (t=0; t<thds; t++)
@@ -42,7 +52,7 @@ void *file_compress(void *args)
     argsThread *thread;
     thread = (argsThread *) args;
 
-    printf("Linhas %d Nome %s task %d\n",thread->line, thread->name, thread->args);
+    printf("Linhas %d task %d\n",thread->line, thread->args);
 
     FILE* fileSplit;
     char nameSplit[50];
@@ -58,27 +68,27 @@ void *file_compress(void *args)
     snprintf(nameSplit, 50, "fileSplit_%d", thread->args);
     snprintf(dataSplit, 50, "dataSplit_%d.hx", thread->args);
     fileSplit = fopen(nameSplit, "w+");
-    numLin = (int) (thread->line / thread->thds);
+    // numLin = (int) (thread->line / thread->thds);
 
-    if(thread->args == thread->thds)
-    {
-        modLin = (int) (thread->line % thread->thds);
-        numLin += modLin;
-    }
+    // if(thread->args == thread->thds)
+    // {
+    //     modLin = (int) (thread->line % thread->thds);
+    //     numLin += modLin;
+    // }
 
     fseek(file, 0, SEEK_SET);
     char *linha= malloc(len);
 
     while (getline(&linha, &len, file) > 0)
     {
-        if (l >= sum && l <= (numLin+sum)) {
+        if (l >= thread->sumLin && l <= (thread->numLin+thread->sumLin)) {
             if (fputs(linha, fileSplit) == EOF)
                 erroGravacao();
         }
         l++;
     }
 
-    sum += numLin;
+    // sum += numLin;
     fclose(fileSplit);
 
     CompressFile(nameSplit, dataSplit);

@@ -17,10 +17,10 @@ typedef struct fileHeader
 
 typedef struct argsThread
 {
-    int thds;
     int args;
     int line;
-    int soma;
+    int numLin;
+    int sumLin;
     // char *name;
 } argsThread;
 
