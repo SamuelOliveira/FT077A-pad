@@ -13,17 +13,16 @@
 void file_compress_pth(const char *fileSource, int thds)
 {
     long t;
-    FILE *file;
     void *status;
     pthread_t threads[thds];
-    char source[] = fileSource;
+    // char source[] = "japoka";
 
     argsThread *args = (argsThread *)malloc(sizeof(argsThread));
 
     file = fopen(fileSource, "rb");
-    args->size = fline(file);
-
-    args->name = source;
+    args->line = fline(file);
+    // args->name = source;
+    args->thds = thds;
     args->soma = 0;
 
     for (t=0; t<thds; t++)
@@ -38,10 +37,55 @@ void file_compress_pth(const char *fileSource, int thds)
     }
 }
 
-void file_compress(void *args)
+void *file_compress(void *args)
 {
-    argsThread *inicio;
-    inicio = (argsThread *) args;
+    argsThread *thread;
+    thread = (argsThread *) args;
 
-    printf("Size %d Nome %s task %d\n",inicio->size, inicio->name, inicio->args);
+    printf("Linhas %d Nome %s task %d\n",thread->line, thread->name, thread->args);
+
+    FILE* fileSplit;
+    char nameSplit[50];
+    char dataSplit[50];
+
+    char line[256];
+    int numLin, modLin;
+
+    int l = 0;
+    size_t len = 100;
+    long posit = 1;
+
+    snprintf(nameSplit, 50, "fileSplit_%d", thread->args);
+    snprintf(dataSplit, 50, "dataSplit_%d.hx", thread->args);
+    fileSplit = fopen(nameSplit, "w+");
+    numLin = (int) (thread->line / thread->thds);
+
+    if(thread->args == thread->thds)
+    {
+        modLin = (int) (thread->line % thread->thds);
+        numLin += modLin;
+    }
+
+    fseek(file, 0, SEEK_SET);
+    char *linha= malloc(len);
+
+    while (getline(&linha, &len, file) > 0)
+    {
+        if (l >= sum && l <= (numLin+sum)) {
+            if (fputs(linha, fileSplit) == EOF)
+                erroGravacao();
+        }
+        l++;
+    }
+
+    sum += numLin;
+    fclose(fileSplit);
+
+    CompressFile(nameSplit, dataSplit);
+    printf("\n");
+
+    remove(nameSplit);
+
+    pthread_exit(NULL);
+
 }

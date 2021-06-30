@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+FILE *file;
+
 typedef struct fileHeader
 {
     int file;
@@ -15,10 +17,11 @@ typedef struct fileHeader
 
 typedef struct argsThread
 {
+    int thds;
     int args;
-    int size;
+    int line;
     int soma;
-    char *name;
+    // char *name;
 } argsThread;
 
 double speed_up(double ts, double tp);

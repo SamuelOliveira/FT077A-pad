@@ -1,6 +1,5 @@
 #Compilador
 COMPILADOR=gcc
-DIRETIVA_OPENMP=-pthread
 #Nome do seu executavel
 NOME_EXECUTAVEL=compress
 #Diretorio dos arquivos binarios
@@ -40,7 +39,7 @@ $(OBJ)/%.o: $(SRC)/%.cpp $(INCLUDE)/%.hpp
 
 #Linkar e criar o executavel
 $(NOME_EXECUTAVEL): $(OBJETOS)
-	$(COMPILADOR) $(DIRETIVAS) $(FLAGS) $(OBJETOS) $(LIBS) -o $(BIN)/$@
+	$(COMPILADOR) -pthread $(FLAGS) $(OBJETOS) $(LIBS) -o $(BIN)/$@
 
 #Executar programa
 run:
